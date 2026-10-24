@@ -1,0 +1,42 @@
+---
+import CopyButton from "./CopyButton.astro";
+
+interface Props {
+  command: string;
+}
+
+const { command } = Astro.props;
+---
+
+<div class="command">
+  <code><span class="prompt" aria-hidden="true">$</span>{command}</code>
+  <CopyButton text={command} />
+</div>
+
+<style>
+  .command {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.5rem 0.5rem 1rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--bg);
+  }
+
+  code {
+    flex: 1;
+    min-width: 0;
+    overflow-x: auto;
+    white-space: nowrap;
+    font-size: 0.9375rem;
+    scrollbar-width: none;
+  }
+
+  .prompt {
+    margin-right: 0.75ch;
+    color: var(--brass);
+    user-select: none;
+  }
+</style>

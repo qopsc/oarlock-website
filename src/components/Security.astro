@@ -1,0 +1,51 @@
+---
+import { securityPoints } from "../data/security";
+import { links } from "../data/site";
+---
+
+<section class="section" id="security">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow">oarlock --secure-by-default</p>
+      <h2>An agent with a shell needs guardrails.</h2>
+      <p class="lead">
+        Oarlock runs shells, edits files, and talks to AI providers, so every boundary checks its input before acting.
+        Read the <a href="https://github.com/qopsc/oarlock/blob/main/docs/architecture/security-model.md">security model</a>
+        or <a href={links.security}>report a vulnerability</a>.
+      </p>
+    </div>
+    <ul>
+      {
+        securityPoints.map((p) => (
+          <li>
+            <h3>{p.title}</h3>
+            <p class="muted">{p.text}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  ul {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+    gap: 2rem 2.5rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  li {
+    display: grid;
+    gap: 0.5rem;
+    align-content: start;
+    padding-top: 1.25rem;
+    border-top: 2px solid var(--brass-fill);
+  }
+
+  p {
+    font-size: 0.9375rem;
+    line-height: 1.55;
+  }
+</style>

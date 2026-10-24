@@ -1,0 +1,27 @@
+{
+  "name": "oarlock-website",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro check && astro build && node scripts/csp.mjs",
+    "check:csp": "node scripts/csp.mjs --check",
+    "preview": "astro preview",
+    "check": "astro check",
+    "lint:install": "shellcheck public/install",
+    "test:install": "bash tests/install.test.sh",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/markdown-remark": "^7.3.4",
+    "@astrojs/sitemap": "^3.7.4",
+    "@astrojs/starlight": "^0.42.7",
+    "astro": "^7.4.2"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.12",
+    "typescript": "^6.0.3"
+  }
+}

@@ -1,0 +1,9 @@
+---
+// Starlight's head plus the site's self-hosted fonts (see `fonts` in astro.config.mjs).
+import Default from "@astrojs/starlight/components/Head.astro";
+import { Font } from "astro:assets";
+---
+
+<Default />
+<Font cssVariable="--font-geist" preload />
+<Font cssVariable="--font-jetbrains-mono" />

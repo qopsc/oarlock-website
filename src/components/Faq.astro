@@ -1,0 +1,67 @@
+---
+import { faq } from "../data/faq";
+---
+
+<section class="section" id="faq">
+  <div class="container narrow">
+    <div class="section-head">
+      <p class="eyebrow">oarlock --help</p>
+      <h2>Questions</h2>
+    </div>
+    <div class="list">
+      {
+        faq.map((item) => (
+          <details>
+            <summary>{item.q}</summary>
+            <p class="muted">{item.a}</p>
+          </details>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .narrow {
+    max-width: calc(52rem + 2 * var(--gutter));
+  }
+
+  details {
+    border-bottom: 1px solid var(--line);
+  }
+
+  details:first-child {
+    border-top: 1px solid var(--line);
+  }
+
+  summary {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.125rem 0;
+    font-weight: 600;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  summary::after {
+    content: "+";
+    color: var(--brass);
+    font-family: var(--font-mono);
+    font-size: 1.25rem;
+    line-height: 1;
+  }
+
+  details[open] summary::after {
+    content: "−";
+  }
+
+  details p {
+    padding-bottom: 1.25rem;
+    max-width: var(--measure);
+  }
+</style>

@@ -1,0 +1,32 @@
+/* Map Starlight's theme onto the landing page palette (src/styles/global.css). */
+:root {
+  --sl-font: var(--font-geist), system-ui, sans-serif;
+  --sl-font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+
+  --sl-color-accent-low: #3a2b10;
+  --sl-color-accent: #d9a441;
+  --sl-color-accent-high: #f3d9a4;
+  --sl-color-white: #ffffff;
+  --sl-color-gray-1: #e9eef3;
+  --sl-color-gray-2: #c9d6e2;
+  --sl-color-gray-3: #93a6b8;
+  --sl-color-gray-4: #5b6f82;
+  --sl-color-gray-5: #263a4c;
+  --sl-color-gray-6: #15222f;
+  --sl-color-black: #0b131b;
+}
+
+:root[data-theme="light"] {
+  --sl-color-accent-low: #f3e3c3;
+  --sl-color-accent: #8a5c0a;
+  --sl-color-accent-high: #4a3105;
+  --sl-color-white: #15222f;
+  --sl-color-gray-1: #1c2c3c;
+  --sl-color-gray-2: #2b3d4e;
+  --sl-color-gray-3: #4e5f6f;
+  --sl-color-gray-4: #7d8c99;
+  --sl-color-gray-5: #ddd5c6;
+  --sl-color-gray-6: #efe9de;
+  --sl-color-gray-7: #f7f4ee;
+  --sl-color-black: #ffffff;
+}

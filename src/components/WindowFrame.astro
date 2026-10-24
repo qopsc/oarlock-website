@@ -1,0 +1,63 @@
+---
+interface Props {
+  title?: string;
+  /** Skip the title bar, for screenshots that already show the app's own. */
+  bare?: boolean;
+}
+
+const { title, bare = false } = Astro.props;
+---
+
+<figure class="window">
+  {
+    !bare && (
+      <div class="chrome" aria-hidden="true">
+        <span />
+        <span />
+        <span />
+        {title && <p>{title}</p>}
+      </div>
+    )
+  }
+  <div class="screen"><slot /></div>
+</figure>
+
+<style>
+  .window {
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: #0f1720;
+    box-shadow: var(--shadow);
+  }
+
+  .chrome {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    height: 2.25rem;
+    padding-inline: 0.875rem;
+    border-bottom: 1px solid #22303e;
+    background: #15202b;
+  }
+
+  .chrome span {
+    width: 0.7rem;
+    height: 0.7rem;
+    border-radius: 50%;
+    background: #33414f;
+  }
+
+  .chrome p {
+    flex: 1;
+    margin-right: 2.5rem;
+    color: #93a6b8;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    text-align: center;
+  }
+
+  .screen :global(img) {
+    width: 100%;
+  }
+</style>

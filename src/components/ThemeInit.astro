@@ -1,0 +1,17 @@
+---
+// Sets data-theme before first paint. Uses Starlight's storage key so the
+// landing pages and /docs share one preference.
+---
+
+<script is:inline>
+  (() => {
+    let theme = null;
+    try {
+      theme = localStorage.getItem("starlight-theme");
+    } catch {}
+    if (theme !== "light" && theme !== "dark") {
+      theme = matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+    }
+    document.documentElement.dataset.theme = theme;
+  })();
+</script>

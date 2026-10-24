@@ -1,0 +1,19 @@
+---
+title: Oarlock docs
+description: Install, configure, and use Oarlock, the terminal-first AI workspace.
+---
+
+import { LinkCard, CardGrid } from "@astrojs/starlight/components";
+
+Oarlock is a lightweight, open-source, terminal-first AI workspace built on Tauri 2, Rust, and React. It combines a GPU-drawn terminal, an agentic AI side panel that runs on your own keys or fully local models, a code editor, a file explorer, source control with a git graph, and a web preview pane. No telemetry. No account.
+
+<CardGrid>
+  <LinkCard title="Install" description="One command for macOS and Linux." href="/docs/install/" />
+  <LinkCard title="Configure AI" description="Add a provider key or point at a local model." href="/docs/configure-ai/" />
+  <LinkCard title="Homebrew, packages, and downloads" description="Every other way to get Oarlock." href="/docs/downloads/" />
+  <LinkCard title="Build from source" description="Rust, Bun, and Tauri prerequisites." href="/docs/build-from-source/" />
+</CardGrid>
+
+## Going deeper
+
+The [architecture docs](https://github.com/qopsc/oarlock/blob/main/docs/README.md) in the Oarlock repository cover the two-process model, PTY shell integration, the security model, and the AI subsystem. They're written for contributors; start with [AGENTS.md](https://github.com/qopsc/oarlock/blob/main/AGENTS.md).

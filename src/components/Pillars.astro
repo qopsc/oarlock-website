@@ -1,0 +1,65 @@
+---
+import { pillars } from "../data/features";
+---
+
+<section class="pillars" aria-label="Principles">
+  <div class="container">
+    <ul>
+      {
+        pillars.map((p) => (
+          <li>
+            <h3>{p.title}</h3>
+            <p class="muted">{p.text}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  .pillars {
+    border-block: 1px solid var(--line);
+    background: var(--surface);
+  }
+
+  ul {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+    padding: 0;
+    list-style: none;
+  }
+
+  li {
+    display: grid;
+    gap: 0.5rem;
+    align-content: start;
+    padding: 1.75rem 1.5rem;
+    border-left: 1px solid var(--line);
+  }
+
+  li:first-child {
+    border-left: 0;
+  }
+
+  h3 {
+    font-size: 1rem;
+  }
+
+  p {
+    font-size: 0.9375rem;
+    line-height: 1.5;
+  }
+
+  @media (max-width: 48rem) {
+    li {
+      padding-inline: 0;
+      border-left: 0;
+      border-top: 1px solid var(--line);
+    }
+
+    li:first-child {
+      border-top: 0;
+    }
+  }
+</style>

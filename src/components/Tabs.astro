@@ -1,0 +1,115 @@
+---
+/**
+ * Accessible tabs. Without JS every panel shows, stacked; with JS only the
+ * selected one does. Panels are slotted elements with data-tab-panel={id}.
+ */
+interface Props {
+  label: string;
+  tabs: { id: string; label: string }[];
+  class?: string;
+}
+
+const { label, tabs, class: className } = Astro.props;
+const uid = `tabs-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+---
+
+<div class:list={["tabs", className]} data-tabs={uid}>
+  <div class="tablist" role="tablist" aria-label={label} hidden>
+    {
+      tabs.map((tab, i) => (
+        <button
+          type="button"
+          role="tab"
+          id={`${uid}-${tab.id}-tab`}
+          aria-controls={`${uid}-${tab.id}`}
+          aria-selected={i === 0 ? "true" : "false"}
+          tabindex={i === 0 ? 0 : -1}
+          data-tab={tab.id}
+        >
+          {tab.label}
+        </button>
+      ))
+    }
+  </div>
+  <slot />
+</div>
+
+<script>
+  for (const root of document.querySelectorAll<HTMLElement>("[data-tabs]")) {
+    const uid = root.dataset.tabs;
+    const list = root.querySelector<HTMLElement>("[role=tablist]");
+    if (!list) continue;
+    const tabs = [...list.querySelectorAll<HTMLButtonElement>("[role=tab]")];
+    const panels = tabs.map((tab) => {
+      const panel = root.querySelector<HTMLElement>(`[data-tab-panel="${tab.dataset.tab}"]`);
+      panel?.setAttribute("id", `${uid}-${tab.dataset.tab}`);
+      panel?.setAttribute("role", "tabpanel");
+      panel?.setAttribute("aria-labelledby", tab.id);
+      return panel;
+    });
+
+    const select = (index: number, focus = false) => {
+      tabs.forEach((tab, i) => {
+        const on = i === index;
+        tab.setAttribute("aria-selected", String(on));
+        tab.tabIndex = on ? 0 : -1;
+        if (panels[i]) panels[i].hidden = !on;
+      });
+      if (focus) tabs[index].focus();
+    };
+
+    list.hidden = false;
+    select(0);
+    tabs.forEach((tab, i) => {
+      tab.addEventListener("click", () => select(i));
+      tab.addEventListener("keydown", (event) => {
+        const last = tabs.length - 1;
+        const next =
+          event.key === "ArrowRight" ? (i === last ? 0 : i + 1)
+          : event.key === "ArrowLeft" ? (i === 0 ? last : i - 1)
+          : event.key === "Home" ? 0
+          : event.key === "End" ? last
+          : -1;
+        if (next < 0) return;
+        event.preventDefault();
+        select(next, true);
+      });
+    });
+  }
+</script>
+
+<style>
+  .tablist {
+    display: flex;
+    gap: 0.25rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .tablist[hidden] {
+    display: none;
+  }
+
+  [role="tab"] {
+    flex: none;
+    padding: 0.5rem 0.875rem;
+    border: 1px solid transparent;
+    border-radius: var(--radius);
+    background: transparent;
+    color: var(--muted);
+    font: inherit;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  [role="tab"]:hover {
+    color: var(--text);
+  }
+
+  [role="tab"][aria-selected="true"] {
+    color: var(--text);
+    border-color: var(--line);
+    background: var(--surface-2);
+  }
+</style>

@@ -1,0 +1,108 @@
+---
+import Logo from "./Logo.astro";
+import { site, links } from "../data/site";
+
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="top">
+      <div class="about">
+        <a class="brand" href="/" aria-label="Oarlock home"><Logo size={26} /><span>oarlock</span></a>
+        <p class="muted">The terminal-first AI workspace. Open source, no telemetry, no account.</p>
+      </div>
+      <nav class="cols" aria-label="Footer">
+        <ul>
+          <li class="heading">Product</li>
+          <li><a href="/#download">Download</a></li>
+          <li><a href="/docs/">Docs</a></li>
+          <li><a href="/roadmap/">Roadmap</a></li>
+          <li><a href={links.releases}>Releases</a></li>
+        </ul>
+        <ul>
+          <li class="heading">Project</li>
+          <li><a href={site.repo}>GitHub</a></li>
+          <li><a href={links.issues}>Issues</a></li>
+          <li><a href={links.security}>Security</a></li>
+          <li><a href={site.siteRepo}>Website source</a></li>
+        </ul>
+      </nav>
+    </div>
+    <p class="legal">
+      © {year} <a href={site.publisher.url}>{site.publisher.name}</a> · Oarlock is licensed under
+      <a href={links.license}>Apache-2.0</a> · Based on <a href={links.terax}>Terax</a> by Crynta
+    </p>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    border-top: 1px solid var(--line);
+    padding-block: 3rem 2rem;
+    background: var(--surface);
+  }
+
+  .top {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 2rem;
+  }
+
+  .about {
+    display: grid;
+    gap: 0.75rem;
+    max-width: 24rem;
+    align-content: start;
+  }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .cols {
+    display: flex;
+    gap: 3rem;
+  }
+
+  ul {
+    display: grid;
+    gap: 0.5rem;
+    padding: 0;
+    list-style: none;
+    align-content: start;
+  }
+
+  .heading {
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+  }
+
+  .cols a {
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  .cols a:hover {
+    color: var(--brass);
+    text-decoration: underline;
+  }
+
+  .legal {
+    margin-top: 2.5rem;
+    color: var(--muted);
+    font-size: var(--step--1);
+  }
+
+  .legal a {
+    color: inherit;
+  }
+</style>

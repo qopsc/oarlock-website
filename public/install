@@ -1,0 +1,493 @@
+#!/usr/bin/env bash
+# Oarlock installer for macOS and Linux.
+#
+#   curl -fsSL https://oarlock.sh/install | bash
+#   curl -fsSL https://oarlock.sh/install | bash -s -- --version v0.1.0
+#   curl -fsSL https://oarlock.sh/install | bash -s -- --uninstall
+#
+# Downloads the matching build from https://github.com/qopsc/oarlock/releases,
+# verifies it against the release's SHA256SUMS, installs it, and links the
+# `oarlock` CLI into ~/.local/bin. Re-run to update.
+#
+# Options:
+#   --version vX.Y.Z              install a specific release (default: latest)
+#   --format deb|rpm|appimage     Linux: override the detected package format
+#   --no-cli                      don't link the oarlock CLI into ~/.local/bin
+#   --uninstall                   remove Oarlock and the CLI link
+#   --dry-run                     print what would happen; change nothing
+#   -y, --yes                     don't ask before using sudo
+#   -h, --help                    show this help
+#
+# Environment:
+#   OARLOCK_INSTALL_DIR   macOS: folder for Oarlock.app (default /Applications,
+#                         or ~/Applications when /Applications isn't writable)
+#   OARLOCK_OS, OARLOCK_ARCH, OARLOCK_DOWNLOAD_BASE
+#                         testing overrides for detection and the download URL
+#
+# The whole script is wrapped in main(), so a partially downloaded copy never runs.
+
+set -euo pipefail
+
+REPO="qopsc/oarlock"
+APP_NAME="Oarlock"
+PKG_NAME="oarlock"
+BIN_DIR="${HOME}/.local/bin"
+DATA_DIR="${XDG_DATA_HOME:-${HOME}/.local/share}"
+APPIMAGE_DIR="${DATA_DIR}/oarlock"
+DESKTOP_FILE="${DATA_DIR}/applications/oarlock.desktop"
+ICON_FILE="${DATA_DIR}/icons/hicolor/256x256/apps/oarlock.png"
+ICON_URL="https://oarlock.sh/oarlock-256.png"
+
+version=""
+format=""
+link_cli=1
+uninstall=0
+dry_run=0
+assume_yes=0
+tmp=""
+
+if [ -t 1 ]; then
+  bold=$'\033[1m' dim=$'\033[2m' red=$'\033[31m' brass=$'\033[33m' reset=$'\033[0m'
+else
+  bold="" dim="" red="" brass="" reset=""
+fi
+
+say() { printf '%s\n' "${brass}==>${reset} ${bold}$*${reset}"; }
+info() { printf '%s\n' "    $*"; }
+warn() { printf '%s\n' "${brass}warning:${reset} $*" >&2; }
+die() {
+  printf '%s\n' "${red}error:${reset} $*" >&2
+  exit 1
+}
+
+usage() {
+  cat <<'USAGE'
+Oarlock installer for macOS and Linux.
+
+Usage: curl -fsSL https://oarlock.sh/install | bash -s -- [options]
+
+Options:
+  --version vX.Y.Z              install a specific release (default: latest)
+  --format deb|rpm|appimage     Linux: override the detected package format
+  --no-cli                      don't link the oarlock CLI into ~/.local/bin
+  --uninstall                   remove Oarlock and the CLI link
+  --dry-run                     print what would happen; change nothing
+  -y, --yes                     don't ask before using sudo
+  -h, --help                    show this help
+
+Docs: https://oarlock.sh/docs/install/
+USAGE
+}
+
+# Runs a command, or prints it under --dry-run.
+run() {
+  if [ "$dry_run" = 1 ]; then
+    printf '%s\n' "    ${dim}would run:${reset} $*"
+  else
+    "$@"
+  fi
+}
+
+has() { command -v "$1" >/dev/null 2>&1; }
+
+parse_args() {
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --version)
+        [ $# -ge 2 ] || die "--version needs a value, like v0.1.0"
+        version="$2"
+        shift 2
+        ;;
+      --version=*)
+        version="${1#*=}"
+        shift
+        ;;
+      --format)
+        [ $# -ge 2 ] || die "--format needs a value: deb, rpm, or appimage"
+        format="$2"
+        shift 2
+        ;;
+      --format=*)
+        format="${1#*=}"
+        shift
+        ;;
+      --no-cli)
+        link_cli=0
+        shift
+        ;;
+      --uninstall)
+        uninstall=1
+        shift
+        ;;
+      --dry-run)
+        dry_run=1
+        shift
+        ;;
+      -y | --yes)
+        assume_yes=1
+        shift
+        ;;
+      -h | --help)
+        usage
+        exit 0
+        ;;
+      *) die "unknown option: $1 (try --help)" ;;
+    esac
+  done
+
+  case "$format" in
+    "" | deb | rpm | appimage) ;;
+    *) die "--format must be deb, rpm, or appimage (got '$format')" ;;
+  esac
+
+  if [ -n "$version" ]; then
+    case "$version" in
+      v*) ;;
+      *) version="v${version}" ;;
+    esac
+    printf '%s' "$version" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+([-.+][0-9A-Za-z.-]+)?$' ||
+      die "--version must look like v1.2.3 (got '$version')"
+  fi
+}
+
+detect_os() {
+  local os="${OARLOCK_OS:-$(uname -s)}"
+  case "$os" in
+    Darwin | darwin | macos) echo macos ;;
+    Linux | linux) echo linux ;;
+    MINGW* | MSYS* | CYGWIN* | Windows_NT | windows)
+      die "Windows builds are coming soon. For now, build from source: https://oarlock.sh/docs/build-from-source/"
+      ;;
+    *) die "unsupported OS: $os. Oarlock supports macOS and Linux." ;;
+  esac
+}
+
+detect_arch() {
+  local os="$1" arch="${OARLOCK_ARCH:-$(uname -m)}"
+  # A shell running under Rosetta reports x86_64 on Apple silicon; install the native build.
+  if [ -z "${OARLOCK_ARCH:-}" ] && [ "$os" = macos ] && [ "$arch" = x86_64 ] &&
+    [ "$(sysctl -n hw.optional.arm64 2>/dev/null || echo 0)" = 1 ]; then
+    arch=arm64
+  fi
+  case "$arch" in
+    arm64 | aarch64) echo arm64 ;;
+    x86_64 | amd64 | x64) echo x64 ;;
+    *) die "unsupported CPU architecture: $arch. Oarlock builds for arm64 and x64." ;;
+  esac
+}
+
+detect_format() {
+  if [ -n "$format" ]; then
+    echo "$format"
+  elif has apt-get && has dpkg; then
+    echo deb
+  elif has dnf || has zypper || has yum; then
+    echo rpm
+  else
+    echo appimage
+  fi
+}
+
+asset_name() {
+  local os="$1" arch="$2" fmt="$3"
+  case "$os" in
+    macos) echo "oarlock-macos-${arch}.dmg" ;;
+    linux)
+      case "$fmt" in
+        appimage) echo "oarlock-linux-${arch}.AppImage" ;;
+        *) echo "oarlock-linux-${arch}.${fmt}" ;;
+      esac
+      ;;
+  esac
+}
+
+download_base() {
+  if [ -n "${OARLOCK_DOWNLOAD_BASE:-}" ]; then
+    echo "${OARLOCK_DOWNLOAD_BASE%/}"
+  elif [ -n "$version" ]; then
+    echo "https://github.com/${REPO}/releases/download/${version}"
+  else
+    echo "https://github.com/${REPO}/releases/latest/download"
+  fi
+}
+
+fetch() {
+  local url="$1" out="$2"
+  if has curl; then
+    curl -fsSL --retry 3 --proto '=https,file' -o "$out" "$url"
+  elif has wget; then
+    wget -q -O "$out" "$url"
+  else
+    die "curl or wget is required"
+  fi
+}
+
+sha256_of() {
+  if has sha256sum; then
+    sha256sum "$1" | awk '{print $1}'
+  elif has shasum; then
+    shasum -a 256 "$1" | awk '{print $1}'
+  else
+    die "sha256sum or shasum is required to verify the download"
+  fi
+}
+
+# Sets SUDO to "sudo" (or "" as root), asking first unless --yes.
+need_root() {
+  SUDO=""
+  [ "$(id -u)" = 0 ] && return
+  has sudo || die "this step needs root, and sudo isn't installed. Re-run as root or use --format appimage."
+  SUDO="sudo"
+  if [ "$assume_yes" = 0 ] && [ "$dry_run" = 0 ] && { : </dev/tty; } 2>/dev/null; then
+    printf '%s' "    $1 needs sudo. Continue? [Y/n] " >/dev/tty
+    local reply=""
+    read -r reply </dev/tty || true
+    case "$reply" in
+      "" | y | Y | yes | YES) ;;
+      *) die "cancelled" ;;
+    esac
+  fi
+}
+
+cleanup() {
+  if [ -n "$tmp" ]; then
+    [ -d "$tmp/mnt" ] && hdiutil detach -quiet "$tmp/mnt" >/dev/null 2>&1 || true
+    rm -rf "$tmp"
+  fi
+}
+
+download_and_verify() {
+  local base="$1" asset="$2"
+  say "Downloading ${asset}"
+  info "${base}/${asset}"
+  if [ "$dry_run" = 1 ]; then
+    info "${dim}would verify against ${base}/SHA256SUMS${reset}"
+    return
+  fi
+
+  fetch "${base}/SHA256SUMS" "$tmp/SHA256SUMS" ||
+    die "couldn't download ${base}/SHA256SUMS. Is there a published release${version:+ named $version}? See https://github.com/${REPO}/releases"
+  fetch "${base}/${asset}" "$tmp/${asset}" || die "couldn't download ${base}/${asset}"
+
+  local expected actual
+  expected="$(awk -v a="$asset" '$2 == a || $2 == "*" a {print $1; exit}' "$tmp/SHA256SUMS")"
+  [ -n "$expected" ] || die "${asset} isn't listed in SHA256SUMS; refusing to install an unverified file"
+  actual="$(sha256_of "$tmp/${asset}")"
+  [ "$expected" = "$actual" ] || die "checksum mismatch for ${asset} (expected ${expected}, got ${actual}); refusing to install"
+  info "checksum verified (sha256 ${actual:0:16}…)"
+}
+
+macos_app_dir() {
+  if [ -n "${OARLOCK_INSTALL_DIR:-}" ]; then
+    echo "$OARLOCK_INSTALL_DIR"
+  elif [ -w /Applications ]; then
+    echo /Applications
+  else
+    echo "${HOME}/Applications"
+  fi
+}
+
+install_macos() {
+  local asset="$1" dir app
+  dir="$(macos_app_dir)"
+  app="${dir}/${APP_NAME}.app"
+  say "Installing ${APP_NAME}.app into ${dir}"
+  if pgrep -xq "$PKG_NAME" 2>/dev/null; then
+    warn "Oarlock is running; quit and reopen it to use the new version"
+  fi
+  if [ "$dry_run" = 1 ]; then
+    info "${dim}would mount ${asset} and copy ${APP_NAME}.app to ${app}${reset}"
+  else
+    mkdir -p "$tmp/mnt" "$dir"
+    hdiutil attach -quiet -nobrowse -readonly -noautoopen -mountpoint "$tmp/mnt" "$tmp/${asset}" ||
+      die "couldn't open ${asset}"
+    [ -d "$tmp/mnt/${APP_NAME}.app" ] || die "${APP_NAME}.app not found in ${asset}"
+    rm -rf "$app"
+    ditto "$tmp/mnt/${APP_NAME}.app" "$app"
+    hdiutil detach -quiet "$tmp/mnt" || true
+  fi
+  CLI_TARGET="${app}/Contents/MacOS/oarlock-cli"
+}
+
+install_linux_package() {
+  local fmt="$1" asset="$2" file="$tmp/$2"
+  need_root "Installing the .${fmt} package"
+  # apt reads the file as the unprivileged _apt user; make it reachable.
+  if [ "$dry_run" = 0 ]; then
+    chmod 755 "$tmp"
+    chmod 644 "$file"
+  fi
+  say "Installing ${asset}"
+  if [ "$fmt" = deb ]; then
+    run ${SUDO:+"$SUDO"} apt-get install -y "$file"
+  elif has dnf; then
+    run ${SUDO:+"$SUDO"} dnf install -y "$file"
+  elif has zypper; then
+    run ${SUDO:+"$SUDO"} zypper --non-interactive install --allow-unsigned-rpm "$file"
+  elif has yum; then
+    run ${SUDO:+"$SUDO"} yum install -y "$file"
+  elif [ "$dry_run" = 1 ]; then
+    info "${dim}no rpm package manager here (dnf, zypper, or yum); a real install would stop${reset}"
+    run ${SUDO:+"$SUDO"} dnf install -y "$file"
+  else
+    die "no rpm package manager found (dnf, zypper, or yum); try --format appimage"
+  fi
+  CLI_TARGET="/usr/bin/oarlock-cli"
+}
+
+install_appimage() {
+  local asset="$1" target="${APPIMAGE_DIR}/${APP_NAME}.AppImage"
+  say "Installing the AppImage into ${APPIMAGE_DIR}"
+  run mkdir -p "$APPIMAGE_DIR" "$(dirname "$DESKTOP_FILE")" "$(dirname "$ICON_FILE")"
+  run install -m 755 "$tmp/${asset}" "$target"
+  if [ "$dry_run" = 1 ]; then
+    info "${dim}would write ${DESKTOP_FILE}${reset}"
+  else
+    fetch "$ICON_URL" "$ICON_FILE" 2>/dev/null || warn "couldn't download the app icon; the menu entry will use a generic one"
+    cat >"$DESKTOP_FILE" <<EOF
+[Desktop Entry]
+Type=Application
+Name=${APP_NAME}
+Comment=Terminal-first AI workspace
+Exec="${target}" %F
+Icon=oarlock
+Terminal=false
+Categories=Development;TerminalEmulator;
+StartupWMClass=oarlock
+EOF
+    has update-desktop-database && update-desktop-database "$(dirname "$DESKTOP_FILE")" >/dev/null 2>&1 || true
+  fi
+  if [ ! -e /dev/fuse ]; then
+    warn "FUSE isn't available, so the AppImage may not start. Install fuse/libfuse2, or run it with --appimage-extract-and-run."
+  fi
+  # The CLI lives inside the AppImage's read-only image, so there's nothing to link.
+  CLI_TARGET=""
+}
+
+link_cli_command() {
+  [ "$link_cli" = 1 ] || return 0
+  if [ -z "$CLI_TARGET" ]; then
+    info "The ${bold}oarlock${reset} command is available inside Oarlock's own terminals."
+    info "For a global command, install the .deb or .rpm instead of the AppImage."
+    return 0
+  fi
+  if [ "$dry_run" = 0 ] && [ ! -x "$CLI_TARGET" ]; then
+    warn "bundled CLI not found at ${CLI_TARGET}; skipping the oarlock command"
+    return 0
+  fi
+  say "Linking the oarlock CLI"
+  run mkdir -p "$BIN_DIR"
+  run ln -sf "$CLI_TARGET" "${BIN_DIR}/oarlock"
+  info "${BIN_DIR}/oarlock -> ${CLI_TARGET}"
+  case ":${PATH}:" in
+    *":${BIN_DIR}:"*) ;;
+    *)
+      info "${BIN_DIR} isn't on your PATH. Add this to your shell profile:"
+      info "  export PATH=\"\$HOME/.local/bin:\$PATH\""
+      ;;
+  esac
+}
+
+do_install() {
+  local os arch fmt="" asset base
+  os="$(detect_os)"
+  arch="$(detect_arch "$os")"
+  [ "$os" = linux ] && fmt="$(detect_format)"
+  [ "$os" = macos ] && [ -n "$format" ] && warn "--format only applies on Linux; ignoring it"
+  asset="$(asset_name "$os" "$arch" "$fmt")"
+  base="$(download_base)"
+
+  say "Installing ${APP_NAME} ${version:-(latest)}"
+  info "plan: os=${os} arch=${arch} format=${fmt:-dmg} asset=${asset}"
+
+  tmp="$(mktemp -d "${TMPDIR:-/tmp}/oarlock-install.XXXXXX")"
+  trap cleanup EXIT
+
+  download_and_verify "$base" "$asset"
+  CLI_TARGET=""
+  case "$os:$fmt" in
+    macos:*) install_macos "$asset" ;;
+    linux:appimage) install_appimage "$asset" ;;
+    linux:*) install_linux_package "$fmt" "$asset" ;;
+  esac
+  link_cli_command
+
+  echo
+  if [ "$dry_run" = 1 ]; then
+    say "Dry run complete; nothing was changed."
+  else
+    say "${APP_NAME} is installed."
+    case "$os:$fmt" in
+      macos:*) info "Open it from Applications or Spotlight." ;;
+      linux:appimage) info "Open it from your app menu, or run ${APPIMAGE_DIR}/${APP_NAME}.AppImage" ;;
+      linux:*) info "Open it from your app menu, or run: oarlock" ;;
+    esac
+    info "Docs: https://oarlock.sh/docs/  ·  Update: re-run this command."
+  fi
+}
+
+do_uninstall() {
+  local os removed=0
+  os="$(detect_os)"
+  say "Uninstalling ${APP_NAME}"
+
+  if [ "$os" = macos ]; then
+    local dir
+    for dir in ${OARLOCK_INSTALL_DIR:+"$OARLOCK_INSTALL_DIR"} /Applications "${HOME}/Applications"; do
+      if [ -d "${dir}/${APP_NAME}.app" ]; then
+        run rm -rf "${dir}/${APP_NAME}.app"
+        info "removed ${dir}/${APP_NAME}.app"
+        removed=1
+      fi
+    done
+  else
+    if has dpkg && dpkg -s "$PKG_NAME" >/dev/null 2>&1; then
+      need_root "Removing the .deb package"
+      run ${SUDO:+"$SUDO"} apt-get remove -y "$PKG_NAME"
+      removed=1
+    elif has rpm && rpm -q "$PKG_NAME" >/dev/null 2>&1; then
+      need_root "Removing the .rpm package"
+      if has dnf; then
+        run ${SUDO:+"$SUDO"} dnf remove -y "$PKG_NAME"
+      elif has zypper; then
+        run ${SUDO:+"$SUDO"} zypper --non-interactive remove "$PKG_NAME"
+      else
+        run ${SUDO:+"$SUDO"} yum remove -y "$PKG_NAME"
+      fi
+      removed=1
+    fi
+    local f
+    for f in "${APPIMAGE_DIR}/${APP_NAME}.AppImage" "$DESKTOP_FILE" "$ICON_FILE"; do
+      if [ -e "$f" ]; then
+        run rm -f "$f"
+        info "removed ${f}"
+        removed=1
+      fi
+    done
+    [ -d "$APPIMAGE_DIR" ] && run rmdir "$APPIMAGE_DIR" 2>/dev/null || true
+  fi
+
+  # Only remove the CLI link if it's ours.
+  if [ -L "${BIN_DIR}/oarlock" ] && readlink "${BIN_DIR}/oarlock" | grep -q 'oarlock-cli$'; then
+    run rm -f "${BIN_DIR}/oarlock"
+    info "removed ${BIN_DIR}/oarlock"
+    removed=1
+  fi
+
+  if [ "$removed" = 1 ]; then
+    say "${APP_NAME} is uninstalled. Settings and keychain entries were left in place."
+  else
+    say "Nothing to remove; ${APP_NAME} doesn't appear to be installed by this script."
+  fi
+}
+
+main() {
+  parse_args "$@"
+  if [ "$uninstall" = 1 ]; then
+    do_uninstall
+  else
+    do_install
+  fi
+}
+
+main "$@"

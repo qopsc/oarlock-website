@@ -1,0 +1,127 @@
+---
+import { Image } from "astro:assets";
+import Tabs from "./Tabs.astro";
+import WindowFrame from "./WindowFrame.astro";
+import { features } from "../data/features";
+---
+
+<section class="section" id="features">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow">oarlock --features</p>
+      <h2>Everything around the prompt, nothing in the way.</h2>
+      <p class="lead">
+        A terminal, an agent, an editor, git, and a browser tab, in one lightweight native app built on Tauri and Rust.
+      </p>
+    </div>
+
+    <ul class="grid">
+      {
+        features.map((f) => (
+          <li class="card">
+            <h3>{f.title}</h3>
+            <p class="muted">{f.summary}</p>
+          </li>
+        ))
+      }
+    </ul>
+
+    <Tabs label="Feature showcase" tabs={features.map((f) => ({ id: f.id, label: f.title }))} class="showcase">
+      {
+        features.map((f) => (
+          <div class="panel" data-tab-panel={f.id}>
+            <div class="copy">
+              <h3>{f.title}</h3>
+              <ul>
+                {f.points.map((point) => (
+                  <li>{point}</li>
+                ))}
+              </ul>
+            </div>
+            <WindowFrame bare>
+              <Image src={f.screen} alt={f.alt} widths={[640, 960, 1400]} sizes="(min-width: 64rem) 52rem, 100vw" />
+            </WindowFrame>
+          </div>
+        ))
+      }
+    </Tabs>
+  </div>
+</section>
+
+<style>
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+    gap: 1rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .grid .card {
+    display: grid;
+    gap: 0.5rem;
+    align-content: start;
+    padding: 1.5rem;
+  }
+
+  .grid p {
+    font-size: 0.9375rem;
+    line-height: 1.55;
+  }
+
+  .section :global(.showcase) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+    margin-top: clamp(3rem, 2rem + 3vw, 4.5rem);
+  }
+
+  .panel {
+    display: grid;
+    gap: 2rem;
+    align-items: center;
+  }
+
+  .panel + .panel {
+    margin-top: 3rem;
+  }
+
+  .panel[role="tabpanel"] {
+    margin-top: 0;
+  }
+
+  .copy {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .copy ul {
+    display: grid;
+    gap: 0.625rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .copy li {
+    position: relative;
+    padding-left: 1.5rem;
+    color: var(--muted);
+    font-size: 0.9375rem;
+    line-height: 1.5;
+  }
+
+  .copy li::before {
+    content: "›";
+    position: absolute;
+    left: 0.25rem;
+    color: var(--brass);
+    font-family: var(--font-mono);
+    font-weight: 700;
+  }
+
+  @media (min-width: 64rem) {
+    .panel {
+      grid-template-columns: 18rem 1fr;
+    }
+  }
+</style>

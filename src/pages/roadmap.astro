@@ -1,0 +1,29 @@
+---
+import Base from "../layouts/Base.astro";
+import { loadRoadmap } from "../lib/roadmap";
+import { links, site } from "../data/site";
+
+const { html } = await loadRoadmap();
+---
+
+<Base title="Roadmap" description="Where Oarlock is headed: what's shipped, what's next, and what's deliberately out of scope.">
+  <section class="section">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">cat ROADMAP.md</p>
+        <h1>Roadmap</h1>
+        <p class="lead">
+          Straight from <a href={`${site.repo}/blob/main/ROADMAP.md`}>ROADMAP.md</a> in the Oarlock repo. Day-to-day work
+          lives in <a href={links.issues}>GitHub Issues</a>.
+        </p>
+      </div>
+      <article class="prose" set:html={html} />
+    </div>
+  </section>
+</Base>
+
+<style>
+  h1 {
+    font-size: var(--step-4);
+  }
+</style>

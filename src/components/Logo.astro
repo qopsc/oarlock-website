@@ -1,0 +1,12 @@
+---
+import logo from "../assets/logo.svg?raw";
+
+interface Props {
+  size?: number;
+}
+
+const { size = 28 } = Astro.props;
+const svg = logo.replace(/<title>.*?<\/title>/, "").replace(/width="\d+" height="\d+"/, `width="${size}" height="${size}" aria-hidden="true"`);
+---
+
+<Fragment set:html={svg} />

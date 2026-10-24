@@ -1,0 +1,67 @@
+---
+import { cloudProviders, localProviders, agents } from "../data/providers";
+
+const groups = [
+  { label: "Bring your own key", items: cloudProviders },
+  { label: "Fully local", items: localProviders },
+  { label: "Orchestrate", items: agents },
+];
+---
+
+<section class="section" id="models">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow">oarlock models</p>
+      <h2>Any model. Your key, or your GPU.</h2>
+      <p class="lead">
+        Paste a key from the provider you already pay for, or point Oarlock at a local server and work offline. Switch per
+        chat, per agent, per autocomplete.
+      </p>
+    </div>
+    <div class="groups">
+      {
+        groups.map((g) => (
+          <div class="group">
+            <p class="label">{g.label}</p>
+            <ul>
+              {g.items.map((name) => (
+                <li>{name}</li>
+              ))}
+            </ul>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .groups {
+    display: grid;
+    gap: 2rem;
+  }
+
+  .label {
+    margin-bottom: 0.75rem;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+  }
+
+  ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.625rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  li {
+    padding: 0.625rem 1.125rem;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--surface);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+</style>

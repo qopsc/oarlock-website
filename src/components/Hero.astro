@@ -1,0 +1,153 @@
+---
+import { Image } from "astro:assets";
+import Command from "./Command.astro";
+import Tabs from "./Tabs.astro";
+import WindowFrame from "./WindowFrame.astro";
+import hero from "../assets/screens/ai-workflow.png";
+import { site } from "../data/site";
+---
+
+<section class="hero">
+  <div class="container">
+    <p class="kicker"><span class="badge">new</span> Open source · No telemetry · No account</p>
+    <h1>
+      <span>Your terminal.</span>
+      <span class="dim">Your machines.</span>
+      <span class="accent">Your agents.</span>
+    </h1>
+    <p class="lead">{site.description}</p>
+
+    <div class="install">
+      <Tabs label="Install" tabs={[{ id: "unix", label: "macOS & Linux" }, { id: "windows", label: "Windows" }]}>
+        <div data-tab-panel="unix">
+          <Command command={site.install.unix} />
+        </div>
+        <div data-tab-panel="windows">
+          <p class="soon"><span class="badge">coming soon</span> Windows builds are on the way. <a href="/docs/build-from-source/">Build from source</a> in the meantime.</p>
+        </div>
+      </Tabs>
+      <div class="ctas">
+        <a class="button" href="#download">Download</a>
+        <a class="button button--quiet" href={site.repo}>Star on GitHub</a>
+        <a class="button button--quiet" href="/docs/">Read the docs</a>
+      </div>
+    </div>
+
+    <div class="shot">
+      <WindowFrame bare>
+        <Image
+          src={hero}
+          alt="Oarlock with an AI agent's proposed edit shown as a diff, waiting for approval"
+          widths={[640, 960, 1280, 1877]}
+          sizes="(min-width: 76rem) 74rem, 100vw"
+          loading="eager"
+          fetchpriority="high"
+        />
+      </WindowFrame>
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    padding-block: clamp(3.5rem, 2rem + 6vw, 7rem) clamp(3rem, 2rem + 4vw, 5rem);
+    text-align: center;
+    isolation: isolate;
+  }
+
+  /* Faint grid with a brass glow behind the headline. */
+  .hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+      radial-gradient(60rem 30rem at 50% 0%, var(--brass-glow), transparent 70%),
+      linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 48px 48px,
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 48px 48px;
+    mask-image: linear-gradient(to bottom, black 55%, transparent);
+  }
+
+  .kicker {
+    display: inline-flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+  }
+
+  h1 {
+    margin-top: 1.5rem;
+    font-size: var(--step-4);
+    font-weight: 750;
+    letter-spacing: -0.045em;
+  }
+
+  h1 span {
+    display: block;
+  }
+
+  .dim {
+    color: var(--glyph);
+    opacity: 0.75;
+  }
+
+  .accent {
+    color: var(--brass);
+  }
+
+  .lead {
+    margin: 1.5rem auto 0;
+    max-width: 44rem;
+  }
+
+  .install {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    gap: 1.25rem;
+    max-width: 36rem;
+    margin: 2.5rem auto 0;
+    text-align: left;
+  }
+
+  .install :global(.tabs) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  .soon {
+    padding: 0.75rem 1rem;
+    border: 1px dashed var(--line);
+    border-radius: var(--radius);
+    color: var(--muted);
+    font-size: 0.9375rem;
+  }
+
+  .ctas {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+  }
+
+  .shot {
+    position: relative;
+    margin-top: clamp(3rem, 2rem + 4vw, 5rem);
+  }
+
+  .shot::before {
+    content: "";
+    position: absolute;
+    inset: 10% 5% -5%;
+    z-index: -1;
+    background: radial-gradient(closest-side, var(--brass-glow), transparent);
+    filter: blur(40px);
+  }
+</style>

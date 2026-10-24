@@ -1,0 +1,136 @@
+---
+import { workbenchAgents, workbenchPoints } from "../data/workbench";
+---
+
+<section class="section workbench" id="workbench">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow">oarlock workbench <span class="badge">coming soon</span></p>
+      <h2>Agents in sandboxes, on machines you own.</h2>
+      <p class="lead">
+        Oarlock is absorbing a self-hosted workbench for running AI coding agents in sandboxes on any machine you own, and
+        steering them from anywhere.
+      </p>
+    </div>
+
+    <div class="layout">
+      <ul class="points">
+        {
+          workbenchPoints.map((p) => (
+            <li class="card">
+              <h3>{p.title}</h3>
+              <p class="muted">{p.text}</p>
+            </li>
+          ))
+        }
+      </ul>
+
+      <div class="term card" aria-label="Preview of agents running in sandboxes" role="img">
+        <p class="cmd"><span>$</span> oarlock sandboxes</p>
+        <table aria-hidden="true">
+          <tbody>
+            {
+              workbenchAgents.map((agent, i) => (
+                <tr>
+                  <td class="name">{agent}</td>
+                  <td class="host">{["mac-studio", "homelab", "vm-01", "homelab", "mac-studio"][i]}</td>
+                  <td class:list={["state", i === 2 ? "idle" : "run"]}>{i === 2 ? "idle" : "running"}</td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+        <p class="note">Illustrative preview. Not yet released.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .workbench {
+    background:
+      radial-gradient(50rem 24rem at 100% 0%, var(--brass-glow), transparent 70%),
+      var(--bg);
+  }
+
+  .eyebrow .badge {
+    margin-left: 0.5rem;
+  }
+
+  .layout {
+    display: grid;
+    gap: 1.5rem;
+  }
+
+  .points {
+    display: grid;
+    gap: 1rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .points .card {
+    display: grid;
+    gap: 0.375rem;
+    padding: 1.25rem 1.5rem;
+  }
+
+  .points p {
+    font-size: 0.9375rem;
+  }
+
+  .term {
+    padding: 1.5rem;
+    background: #0f1720;
+    color: #e9eef3;
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    border-color: #22303e;
+  }
+
+  .cmd span {
+    color: #e0ac4f;
+  }
+
+  table {
+    width: 100%;
+    margin-top: 1rem;
+    border-collapse: collapse;
+  }
+
+  td {
+    padding: 0.4rem 0;
+    border-top: 1px dashed #22303e;
+  }
+
+  .host {
+    color: #93a6b8;
+  }
+
+  .state {
+    text-align: right;
+  }
+
+  .run::before {
+    content: "● ";
+    color: #6fcf8f;
+  }
+
+  .idle::before {
+    content: "○ ";
+    color: #93a6b8;
+  }
+
+  .note {
+    margin-top: 1rem;
+    color: #93a6b8;
+    font-size: 0.75rem;
+  }
+
+  @media (min-width: 60rem) {
+    .layout {
+      grid-template-columns: 1fr 1.1fr;
+      align-items: start;
+    }
+  }
+</style>
