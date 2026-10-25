@@ -1,57 +1,63 @@
-/* Oarlock: the icon's navy and glyph grays, with brass as the one accent.
-   Dark is the default; light follows the system or the header toggle.
-   Theme choice is stored under Starlight's key so /docs stays in sync. */
+/* Oarlock: weathered bronze. Verdigris marks what you can use today;
+   bronze marks what's still coming. Dark is the default; light follows the
+   system or the header toggle. Theme choice is stored under Starlight's key
+   so /docs stays in sync. */
 :root {
   color-scheme: dark;
 
-  --bg: #0b131b; /* page */
-  --surface: #15222f; /* icon navy: raised panels */
-  --surface-2: #1c2c3c; /* hover, tabs */
-  --line: #263a4c; /* borders */
-  --text: #e9eef3; /* icon glyph */
-  --muted: #93a6b8; /* secondary text */
-  --glyph: #c9d6e2; /* icon inner circle */
-  --brass: #e0ac4f; /* links, accents, focus */
-  --brass-fill: #d9a441; /* button fill */
-  --brass-fill-hover: #e8b85a;
-  --brass-ink: #1a1305; /* text on brass */
-  --brass-glow: rgb(217 164 65 / 0.16);
-  --grid: rgb(201 214 226 / 0.05);
-  --shadow: 0 30px 80px -30px rgb(0 0 0 / 0.7);
+  --bg: #0d1615; /* deep hull */
+  --surface: #15211f; /* raised bands */
+  --surface-2: #1b2a27; /* hover, selected tab */
+  --line: #24352f;
+  --text: #e6efeb; /* foam */
+  --muted: #8ea59d; /* salt */
+  --accent: #4fd1b0; /* verdigris: links, focus, available */
+  --accent-fill: #4fd1b0;
+  --accent-fill-hover: #79e0c6;
+  --accent-ink: #052019;
+  --bronze: #c98a4b; /* coming soon */
+  --shadow: 0 40px 90px -40px rgb(0 0 0 / 0.75);
 
-  --font-sans: var(--font-geist), system-ui, sans-serif;
-  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+  /* The terminal mock and screenshot frames stay dark in both themes. */
+  --term-bg: #0a1211;
+  --term-line: #22322e;
+  --term-text: #e6efeb;
+  --term-muted: #8ea59d;
+  --term-chrome: #131e1c;
+  --accent-on-term: #4fd1b0;
+
+  --font-sans: var(--font-bricolage), system-ui, sans-serif;
+  --font-mono: var(--font-martian-mono), ui-monospace, monospace;
 
   --step--1: 0.875rem;
   --step-0: 1.0625rem;
   --step-1: 1.3125rem;
-  --step-2: clamp(1.5rem, 1.2rem + 1.2vw, 2rem);
-  --step-3: clamp(2rem, 1.4rem + 2.4vw, 3rem);
-  --step-4: clamp(2.5rem, 1.3rem + 5vw, 5rem);
+  --step-2: clamp(1.5rem, 1.25rem + 1vw, 2.25rem);
+  --step-3: clamp(2.25rem, 1.6rem + 2.4vw, 3.25rem);
+  --step-4: clamp(2.75rem, 1.5rem + 5.2vw, 5.25rem);
 
+  --header-height: 4.0625rem; /* .site-header: 4rem bar plus its border */
   --gutter: clamp(1rem, 4vw, 2.5rem);
   --measure: 62ch;
-  --page: 74rem;
-  --radius: 8px;
+  --page: 76rem;
+  --radius: 6px;
 }
 
 :root[data-theme="light"] {
   color-scheme: light;
 
-  --bg: #f7f4ee;
+  --bg: #eef3f1;
   --surface: #ffffff;
-  --surface-2: #efe9de;
-  --line: #ddd5c6;
-  --text: #15222f;
-  --muted: #4e5f6f;
-  --glyph: #2b3d4e;
-  --brass: #8a5c0a;
-  --brass-fill: #c48b25;
-  --brass-fill-hover: #b07a18;
-  --brass-ink: #1a1305;
-  --brass-glow: rgb(196 139 37 / 0.14);
-  --grid: rgb(21 34 47 / 0.05);
-  --shadow: 0 30px 70px -35px rgb(21 34 47 / 0.45);
+  --surface-2: #e2ebe7;
+  --line: #cfdcd6;
+  --text: #10201c;
+  --muted: #4a5f58;
+  --accent: #0f7a63;
+  --accent-fill: #0f7a63;
+  --accent-fill-hover: #0b604e;
+  --accent-ink: #ffffff;
+  --bronze: #8f5a24;
+  --shadow: 0 40px 80px -45px rgb(16 32 28 / 0.5);
 }
 
 *,
@@ -79,6 +85,7 @@ body {
   color: var(--text);
   font-family: var(--font-sans);
   font-size: var(--step-0);
+  font-optical-sizing: auto;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -106,20 +113,21 @@ h1,
 h2,
 h3 {
   font-weight: 700;
-  line-height: 1.05;
-  letter-spacing: -0.035em;
+  line-height: 1.04;
+  letter-spacing: -0.03em;
   text-wrap: balance;
 }
 
 h2 {
   font-size: var(--step-3);
+  font-weight: 650;
 }
 
 h3 {
   font-size: var(--step-1);
   font-weight: 600;
   line-height: 1.25;
-  letter-spacing: -0.015em;
+  letter-spacing: -0.012em;
 }
 
 p {
@@ -133,7 +141,7 @@ img {
 }
 
 a {
-  color: var(--brass);
+  color: var(--accent);
   text-decoration-thickness: 1px;
   text-underline-offset: 0.2em;
 }
@@ -143,26 +151,25 @@ a:hover {
 }
 
 :focus-visible {
-  outline: 2px solid var(--brass);
+  outline: 2px solid var(--accent);
   outline-offset: 3px;
   border-radius: 2px;
 }
 
 ::selection {
-  background: var(--brass-fill);
-  color: var(--brass-ink);
+  background: var(--accent-fill);
+  color: var(--accent-ink);
 }
 
 code,
 kbd,
-pre,
-.mono {
+pre {
   font-family: var(--font-mono);
 }
 
 code,
 kbd {
-  font-size: 0.88em;
+  font-size: 0.82em;
 }
 
 .container {
@@ -173,36 +180,49 @@ kbd {
 }
 
 .section {
-  padding-block: clamp(4rem, 3rem + 5vw, 7rem);
+  padding-block: clamp(4.5rem, 3rem + 6vw, 8rem);
 }
 
-.section + .section {
-  border-top: 1px solid var(--line);
+.band {
+  background: var(--surface);
+  border-block: 1px solid var(--line);
+}
+
+/* A verdigris wash, for the section that needs to stand apart from its neighbours. */
+.band--tint {
+  background: color-mix(in srgb, var(--accent) 9%, var(--bg));
+  border-color: color-mix(in srgb, var(--accent) 22%, var(--line));
+}
+
+/* Heading on the left, content on the right, on wide screens. */
+.split {
+  display: grid;
+  gap: 2.5rem;
+}
+
+@media (min-width: 64rem) {
+  .split {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: 4rem;
+  }
+
+  .split > .section-head {
+    position: sticky;
+    top: 6rem;
+    align-self: start;
+    margin-bottom: 0;
+  }
 }
 
 .section-head {
   display: grid;
-  gap: 1rem;
-  max-width: 48rem;
-  margin-bottom: clamp(2rem, 1.5rem + 2vw, 3.5rem);
-}
-
-/* Small mono label above section titles, like a shell prompt. */
-.eyebrow {
-  font-family: var(--font-mono);
-  font-size: var(--step--1);
-  font-weight: 500;
-  color: var(--brass);
-  letter-spacing: 0.02em;
-}
-
-.eyebrow::before {
-  content: "$ ";
-  color: var(--muted);
+  gap: 1.25rem;
+  max-width: 46rem;
+  margin-bottom: clamp(2.5rem, 2rem + 2vw, 4rem);
 }
 
 .lead {
-  font-size: clamp(1.0625rem, 1rem + 0.5vw, var(--step-1));
+  font-size: clamp(1.0625rem, 1rem + 0.4vw, var(--step-1));
   line-height: 1.55;
   color: var(--muted);
   max-width: var(--measure);
@@ -212,6 +232,12 @@ kbd {
   color: var(--muted);
 }
 
+/* Status for things that aren't released yet. */
+.soon {
+  color: var(--bronze);
+  font-weight: 600;
+}
+
 .button {
   display: inline-flex;
   align-items: center;
@@ -219,10 +245,10 @@ kbd {
   gap: 0.5rem;
   min-height: 2.75rem;
   padding: 0.625rem 1.25rem;
-  border: 1px solid var(--brass-fill);
+  border: 1px solid var(--accent-fill);
   border-radius: var(--radius);
-  background: var(--brass-fill);
-  color: var(--brass-ink);
+  background: var(--accent-fill);
+  color: var(--accent-ink);
   font: inherit;
   font-weight: 600;
   line-height: 1.2;
@@ -231,8 +257,8 @@ kbd {
 }
 
 .button:hover {
-  background: var(--brass-fill-hover);
-  border-color: var(--brass-fill-hover);
+  background: var(--accent-fill-hover);
+  border-color: var(--accent-fill-hover);
 }
 
 .button--quiet {
@@ -246,34 +272,14 @@ kbd {
   border-color: var(--muted);
 }
 
-.badge {
-  display: inline-block;
-  padding: 0.125rem 0.5rem;
-  border: 1px solid var(--brass);
-  border-radius: 999px;
-  color: var(--brass);
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  font-weight: 500;
-  line-height: 1.5;
-  white-space: nowrap;
-  vertical-align: middle;
-}
-
-.card {
-  border: 1px solid var(--line);
-  border-radius: calc(var(--radius) * 1.5);
-  background: var(--surface);
-}
-
 .skip-link {
   position: absolute;
   left: var(--gutter);
   top: -4rem;
   z-index: 20;
   padding: 0.5rem 1rem;
-  background: var(--brass-fill);
-  color: var(--brass-ink);
+  background: var(--accent-fill);
+  color: var(--accent-ink);
   border-radius: var(--radius);
   font-weight: 600;
 }
@@ -296,7 +302,7 @@ kbd {
 
 /* Long-form text (roadmap). */
 .prose {
-  max-width: 72ch;
+  max-width: 70ch;
 }
 
 .prose > * + * {
@@ -304,7 +310,7 @@ kbd {
 }
 
 .prose h2 {
-  margin-top: 3rem;
+  margin-top: 3.5rem;
   font-size: var(--step-2);
 }
 
@@ -326,7 +332,7 @@ kbd {
 }
 
 .prose input[type="checkbox"] {
-  accent-color: var(--brass-fill);
+  accent-color: var(--accent-fill);
   margin-right: 0.5rem;
 }
 

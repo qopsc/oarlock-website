@@ -5,16 +5,21 @@
  */
 interface Props {
   label: string;
-  tabs: { id: string; label: string }[];
+  /** `detail` adds a second line of text under the tab's label. */
+  tabs: { id: string; label: string; detail?: string }[];
+  /** Stack the tabs in a column, navigated with the up and down arrows. */
+  vertical?: boolean;
+  /** Open the tab for the visitor's OS first, e.g. { macos: "mac", linux: "linux", windows: "win" }. */
+  detect?: Partial<Record<"macos" | "linux" | "windows", string>>;
   class?: string;
 }
 
-const { label, tabs, class: className } = Astro.props;
+const { label, tabs, vertical = false, detect, class: className } = Astro.props;
 const uid = `tabs-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
 ---
 
-<div class:list={["tabs", className]} data-tabs={uid}>
-  <div class="tablist" role="tablist" aria-label={label} hidden>
+<div class:list={["tabs", className, { vertical }]} data-tabs={uid} data-detect={detect && JSON.stringify(detect)}>
+  <div class="tablist" role="tablist" aria-label={label} aria-orientation={vertical ? "vertical" : undefined} hidden>
     {
       tabs.map((tab, i) => (
         <button
@@ -25,8 +30,15 @@ const uid = `tabs-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
           aria-selected={i === 0 ? "true" : "false"}
           tabindex={i === 0 ? 0 : -1}
           data-tab={tab.id}
+          aria-labelledby={tab.detail ? `${uid}-${tab.id}-label` : undefined}
+          aria-describedby={tab.detail ? `${uid}-${tab.id}-detail` : undefined}
         >
-          {tab.label}
+          {tab.detail ? <span class="label" id={`${uid}-${tab.id}-label`}>{tab.label}</span> : tab.label}
+          {tab.detail && (
+            <span class="detail" id={`${uid}-${tab.id}-detail`}>
+              {tab.detail}
+            </span>
+          )}
         </button>
       ))
     }
@@ -37,6 +49,7 @@ const uid = `tabs-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
 <script>
   for (const root of document.querySelectorAll<HTMLElement>("[data-tabs]")) {
     const uid = root.dataset.tabs;
+    const vertical = root.classList.contains("vertical");
     const list = root.querySelector<HTMLElement>("[role=tablist]");
     if (!list) continue;
     const tabs = [...list.querySelectorAll<HTMLButtonElement>("[role=tab]")];
@@ -58,15 +71,23 @@ const uid = `tabs-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
       if (focus) tabs[index].focus();
     };
 
+    // Best guess at the visitor's OS; anything unrecognised keeps the first tab.
+    const detect = JSON.parse(root.dataset.detect ?? "{}") as Record<string, string>;
+    const ua = navigator.userAgent;
+    const os = /Windows/.test(ua) ? "windows" : /Mac OS X|Macintosh/.test(ua) && !/iPhone|iPad/.test(ua) ? "macos" : /Linux|X11/.test(ua) && !/Android/.test(ua) ? "linux" : "";
+    const initial = tabs.findIndex((tab) => tab.dataset.tab === detect[os]);
+
     list.hidden = false;
-    select(0);
+    select(Math.max(initial, 0));
     tabs.forEach((tab, i) => {
       tab.addEventListener("click", () => select(i));
       tab.addEventListener("keydown", (event) => {
         const last = tabs.length - 1;
+        const forward = vertical ? "ArrowDown" : "ArrowRight";
+        const back = vertical ? "ArrowUp" : "ArrowLeft";
         const next =
-          event.key === "ArrowRight" ? (i === last ? 0 : i + 1)
-          : event.key === "ArrowLeft" ? (i === 0 ? last : i - 1)
+          event.key === forward ? (i === last ? 0 : i + 1)
+          : event.key === back ? (i === 0 ? last : i - 1)
           : event.key === "Home" ? 0
           : event.key === "End" ? last
           : -1;
@@ -111,5 +132,37 @@ const uid = `tabs-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
     color: var(--text);
     border-color: var(--line);
     background: var(--surface-2);
+  }
+
+  .vertical .tablist {
+    flex-direction: column;
+    gap: 0;
+    overflow: visible;
+  }
+
+  .vertical [role="tab"] {
+    display: grid;
+    gap: 0.25rem;
+    padding: 1rem 1.25rem;
+    border: 0;
+    border-left: 2px solid var(--line);
+    border-radius: 0;
+    text-align: left;
+  }
+
+  .vertical [role="tab"][aria-selected="true"] {
+    border-left-color: var(--accent);
+    background: var(--surface);
+  }
+
+  .label {
+    color: var(--text);
+    font-size: var(--step-0);
+    font-weight: 600;
+  }
+
+  .detail {
+    font-size: 0.9375rem;
+    line-height: 1.5;
   }
 </style>

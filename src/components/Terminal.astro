@@ -1,0 +1,81 @@
+---
+/** A dark terminal window. Stays dark in both themes, like the app's own. */
+interface Props {
+  title: string;
+  /** Describes the session for screen readers; the text inside is hidden from them. */
+  label: string;
+  class?: string;
+}
+
+const { title, label, class: className } = Astro.props;
+---
+
+<figure class:list={["terminal", className]} role="img" aria-label={label}>
+  <div class="chrome" aria-hidden="true">
+    <span class="light close"></span>
+    <span class="light minimize"></span>
+    <span class="light zoom"></span>
+    <p>{title}</p>
+  </div>
+  <div class="screen" aria-hidden="true">
+    <slot />
+  </div>
+</figure>
+
+<style>
+  .terminal {
+    overflow: hidden;
+    border: 1px solid var(--term-line);
+    border-radius: 12px;
+    background: var(--term-bg);
+    color: var(--term-text);
+    box-shadow: var(--shadow);
+  }
+
+  .chrome {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    height: 2.25rem;
+    padding-inline: 0.875rem;
+    border-bottom: 1px solid var(--term-line);
+    background: var(--term-chrome);
+  }
+
+  .light {
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 0.5px rgb(0 0 0 / 0.25);
+  }
+
+  .close {
+    background: #ff5f57;
+  }
+
+  .minimize {
+    background: #febc2e;
+  }
+
+  .zoom {
+    background: #28c840;
+  }
+
+  .chrome p {
+    flex: 1;
+    margin-right: 3.25rem;
+    overflow: hidden;
+    color: var(--term-muted);
+    font-size: 0.75rem;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .screen {
+    padding: 1.125rem 1.25rem 1.25rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    line-height: 1.65;
+  }
+</style>

@@ -1,5 +1,26 @@
 /** The self-hosted agent workbench being folded into Oarlock. Everything here is unreleased. */
-export const workbenchAgents = ["Claude Code", "Codex", "OpenCode", "pi", "oh-my-pi"];
+
+/** The illustrative `oarlock sandboxes` listing, grouped by host. */
+export const workbenchHosts = [
+  {
+    host: "mac-studio",
+    sandboxes: [
+      { agent: "Claude Code", project: "oarlock-web", status: "running" },
+      { agent: "Codex", project: "api", status: "running" },
+    ],
+  },
+  {
+    host: "homelab",
+    sandboxes: [
+      { agent: "OpenCode", project: "infra", status: "idle" },
+      { agent: "pi", project: "docs", status: "running" },
+    ],
+  },
+  {
+    host: "vm-01",
+    sandboxes: [{ agent: "oh-my-pi", project: "scratch", status: "running" }],
+  },
+] as const;
 
 export const workbenchPoints = [
   {

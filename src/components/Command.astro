@@ -30,13 +30,19 @@ const { command } = Astro.props;
     min-width: 0;
     overflow-x: auto;
     white-space: nowrap;
-    font-size: 0.9375rem;
+    font-size: 0.875rem;
     scrollbar-width: none;
+  }
+
+  @media (max-width: 30rem) {
+    code {
+      font-size: 0.75rem;
+    }
   }
 
   .prompt {
     margin-right: 0.75ch;
-    color: var(--brass);
+    color: var(--accent);
     user-select: none;
   }
 </style>

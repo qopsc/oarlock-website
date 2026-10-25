@@ -17,10 +17,14 @@ export async function loadRoadmap(): Promise<Roadmap> {
   try {
     const res = await fetch(RAW_URL, { signal: AbortSignal.timeout(10_000) });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    markdown = await res.text();
+    const live = await res.text();
+    // Until the Oarlock rename merges into main, main still carries the upstream
+    // Terax roadmap. Only use a live copy that's about Oarlock.
+    if (!/^# Roadmap\s+Oarlock /m.test(live)) throw new Error("main's ROADMAP.md isn't the Oarlock one yet");
+    markdown = live;
     source = "live";
   } catch (error) {
-    console.warn(`[roadmap] using bundled snapshot: could not fetch ${RAW_URL} (${error})`);
+    console.warn(`[roadmap] using bundled snapshot: could not use ${RAW_URL} (${error})`);
   }
 
   // The page supplies its own title; relative links point into the oarlock repo.

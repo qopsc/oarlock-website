@@ -1,0 +1,167 @@
+---
+/**
+ * A terminal session that types itself out on a loop. Without JS, or with
+ * reduced motion, the finished session shows as static text.
+ */
+import Terminal from "./Terminal.astro";
+
+type Line = { kind: "cmd"; text: string } | { kind: "out"; text: string; tone?: "ok" | "dim" | "ask" | "accent" };
+
+const session: Line[] = [
+  { kind: "cmd", text: "cd ~/dev/physics-engine" },
+  { kind: "cmd", text: 'claude "make the plunger sweep faster"' },
+  { kind: "out", text: "● Read  src/main.ts", tone: "dim" },
+  { kind: "out", text: "● Edit  src/main.ts  +4 −2", tone: "accent" },
+  { kind: "out", text: "? Allow edit to src/main.ts? (y/n) y", tone: "ask" },
+  { kind: "out", text: "✓ Edit applied", tone: "ok" },
+  { kind: "cmd", text: "bun test" },
+  { kind: "out", text: "✓ 24 passed in 1.18s", tone: "ok" },
+  { kind: "cmd", text: 'git commit -am "Speed up plunger"' },
+  { kind: "out", text: "[main 4f2c1a9] Speed up plunger", tone: "dim" },
+];
+---
+
+<Terminal
+  title="zsh — ~/dev/physics-engine"
+  label="An example terminal session: an agent edits a file after approval, tests pass, and the change is committed"
+>
+  <div class="session" data-term>
+    {
+      session.map((line) =>
+        line.kind === "cmd" ? (
+          <p class="line cmd" data-kind="cmd"><span class="prompt">❯</span><span class="text" data-text={line.text}>{line.text}</span></p>
+        ) : (
+          <p class:list={["line", "out", line.tone]} data-kind="out"><span class="text">{line.text}</span></p>
+        ),
+      )
+    }
+    <p class="line cmd idle"><span class="prompt">❯</span><span class="cursor"></span></p>
+  </div>
+</Terminal>
+
+<script>
+  const body = document.querySelector<HTMLElement>("[data-term]");
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (body && !reduced) {
+    const lines = [...body.querySelectorAll<HTMLElement>(".line:not(.idle)")];
+    const idle = body.querySelector<HTMLElement>(".idle")!;
+    const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+    let visible = true;
+    new IntersectionObserver(([entry]) => (visible = entry.isIntersecting)).observe(body);
+    const waitVisible = async () => {
+      while (!visible || document.hidden) await sleep(250);
+    };
+
+    const run = async () => {
+      for (;;) {
+        for (const line of lines) line.hidden = true;
+        idle.hidden = false;
+        await sleep(600);
+        for (const line of lines) {
+          await waitVisible();
+          if (line.dataset.kind === "cmd") {
+            const text = line.querySelector<HTMLElement>(".text")!;
+            const full = text.dataset.text ?? "";
+            text.textContent = "";
+            line.classList.add("typing");
+            line.hidden = false;
+            idle.hidden = true;
+            for (let i = 1; i <= full.length; i++) {
+              text.textContent = full.slice(0, i);
+              await sleep(28 + Math.random() * 45);
+            }
+            await sleep(350);
+            line.classList.remove("typing");
+          } else {
+            await sleep(260 + Math.random() * 380);
+            line.hidden = false;
+          }
+        }
+        idle.hidden = false;
+        await sleep(4500);
+      }
+    };
+    run();
+  }
+</script>
+
+<style>
+  /* Fixed height (the whole session) so the page doesn't move while lines appear. */
+  .session {
+    display: grid;
+    align-content: start;
+    gap: 0.25rem;
+    min-height: 17.75rem;
+  }
+
+  .line {
+    display: flex;
+    align-items: baseline;
+    min-height: 1.65em;
+  }
+
+  .text {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  .out + .cmd {
+    margin-top: 0.5rem;
+  }
+
+  .out {
+    padding-left: 2ch;
+  }
+
+  .prompt {
+    flex: none;
+    width: 2ch;
+    color: var(--accent-on-term);
+  }
+
+  .dim {
+    color: var(--term-muted);
+  }
+
+  .accent {
+    color: var(--accent-on-term);
+  }
+
+  .ask {
+    color: #e0b07a;
+  }
+
+  .ok {
+    color: #8fe0a8;
+  }
+
+  .cursor,
+  .typing .text::after {
+    display: inline-block;
+    width: 0.6em;
+    height: 1.2em;
+    align-self: center;
+    background: var(--term-text);
+    animation: blink 1s steps(1) infinite;
+  }
+
+  .typing .text::after {
+    content: "";
+    margin-left: 1px;
+    vertical-align: text-bottom;
+    animation: none;
+  }
+
+  @keyframes blink {
+    50% {
+      opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cursor {
+      animation: none;
+    }
+  }
+</style>

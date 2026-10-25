@@ -16,26 +16,16 @@ const inner = logo
   .replace("</svg>", "");
 
 const og = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
-  <defs>
-    <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
-      <path d="M48 0H0V48" fill="none" stroke="#c9d6e2" stroke-opacity="0.06"/>
-    </pattern>
-    <radialGradient id="glow" cx="0.85" cy="0" r="0.8">
-      <stop offset="0" stop-color="#d9a441" stop-opacity="0.28"/>
-      <stop offset="1" stop-color="#d9a441" stop-opacity="0"/>
-    </radialGradient>
-  </defs>
-  <rect width="1200" height="630" fill="#0b131b"/>
-  <rect width="1200" height="630" fill="url(#grid)"/>
-  <rect width="1200" height="630" fill="url(#glow)"/>
-  <svg x="80" y="80" width="112" height="112" viewBox="0 0 1024 1024">${inner}</svg>
-  <text x="214" y="152" font-family="Menlo, 'DejaVu Sans Mono', monospace" font-size="44" font-weight="700" fill="#e9eef3">oarlock</text>
-  <g font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="84" font-weight="700" letter-spacing="-3">
-    <text x="80" y="340" fill="#e9eef3">Your terminal.</text>
-    <text x="80" y="436" fill="#c9d6e2" fill-opacity="0.75">Your machines.</text>
-    <text x="80" y="532" fill="#e0ac4f">Your agents.</text>
+  <rect width="1200" height="630" fill="#0d1615"/>
+  <rect x="0" y="622" width="1200" height="8" fill="#4fd1b0"/>
+  <svg x="80" y="72" width="96" height="96" viewBox="0 0 1024 1024">${inner}</svg>
+  <text x="194" y="136" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="44" font-weight="700" letter-spacing="-1.5" fill="#e6efeb">oarlock</text>
+  <g font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="88" font-weight="700" letter-spacing="-3.5" fill="#e6efeb">
+    <text x="80" y="330">Your terminal.</text>
+    <text x="160" y="426">Your machines.</text>
+    <text x="240" y="522">Your agents.</text>
   </g>
-  <text x="1120" y="560" text-anchor="end" font-family="Menlo, 'DejaVu Sans Mono', monospace" font-size="28" fill="#93a6b8">oarlock.sh</text>
+  <text x="1120" y="572" text-anchor="end" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="28" fill="#8ea59d">oarlock.sh</text>
 </svg>`;
 
 await sharp(Buffer.from(og)).png().toFile("public/og.png");

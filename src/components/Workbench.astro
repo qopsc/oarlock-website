@@ -1,11 +1,14 @@
 ---
-import { workbenchAgents, workbenchPoints } from "../data/workbench";
+import Terminal from "./Terminal.astro";
+import { workbenchHosts, workbenchPoints } from "../data/workbench";
+
+const count = workbenchHosts.reduce((n, h) => n + h.sandboxes.length, 0);
 ---
 
-<section class="section workbench" id="workbench">
+<section class="section" id="workbench">
   <div class="container">
     <div class="section-head">
-      <p class="eyebrow">oarlock workbench <span class="badge">coming soon</span></p>
+      <p class="soon">Coming soon</p>
       <h2>Agents in sandboxes, on machines you own.</h2>
       <p class="lead">
         Oarlock is absorbing a self-hosted workbench for running AI coding agents in sandboxes on any machine you own, and
@@ -14,123 +17,175 @@ import { workbenchAgents, workbenchPoints } from "../data/workbench";
     </div>
 
     <div class="layout">
+      <Terminal
+        title="zsh — ~"
+        label={`Preview of ${count} agents running in sandboxes across ${workbenchHosts.length} machines. Not yet released.`}
+      >
+        <p class="cmd"><span class="prompt">❯</span>oarlock sandboxes</p>
+        <table>
+          <thead>
+            <tr>
+              <th>agent</th>
+              <th>project</th>
+              <th class="state">status</th>
+            </tr>
+          </thead>
+          {
+            workbenchHosts.map((h) => (
+              <tbody>
+                <tr class="host">
+                  <th colspan="3">
+                    {h.host} <span>{h.sandboxes.length} {h.sandboxes.length === 1 ? "sandbox" : "sandboxes"}</span>
+                  </th>
+                </tr>
+                {h.sandboxes.map((s) => (
+                  <tr>
+                    <td class="agent">{s.agent}</td>
+                    <td class="dim">{s.project}</td>
+                    <td class:list={["state", `is-${s.status}`]}>{s.status}</td>
+                  </tr>
+                ))}
+              </tbody>
+            ))
+          }
+        </table>
+        <p class="cmd"><span class="prompt">❯</span><span class="cursor"></span></p>
+      </Terminal>
+
       <ul class="points">
         {
           workbenchPoints.map((p) => (
-            <li class="card">
+            <li>
               <h3>{p.title}</h3>
               <p class="muted">{p.text}</p>
             </li>
           ))
         }
       </ul>
-
-      <div class="term card" aria-label="Preview of agents running in sandboxes" role="img">
-        <p class="cmd"><span>$</span> oarlock sandboxes</p>
-        <table aria-hidden="true">
-          <tbody>
-            {
-              workbenchAgents.map((agent, i) => (
-                <tr>
-                  <td class="name">{agent}</td>
-                  <td class="host">{["mac-studio", "homelab", "vm-01", "homelab", "mac-studio"][i]}</td>
-                  <td class:list={["state", i === 2 ? "idle" : "run"]}>{i === 2 ? "idle" : "running"}</td>
-                </tr>
-              ))
-            }
-          </tbody>
-        </table>
-        <p class="note">Illustrative preview. Not yet released.</p>
-      </div>
     </div>
+    <p class="note muted">Illustrative preview. Not yet released.</p>
   </div>
 </section>
 
 <style>
-  .workbench {
-    background:
-      radial-gradient(50rem 24rem at 100% 0%, var(--brass-glow), transparent 70%),
-      var(--bg);
-  }
-
-  .eyebrow .badge {
-    margin-left: 0.5rem;
-  }
-
   .layout {
     display: grid;
-    gap: 1.5rem;
+    gap: 2.5rem;
   }
 
   .points {
     display: grid;
-    gap: 1rem;
+    gap: 1.75rem;
     padding: 0;
     list-style: none;
   }
 
-  .points .card {
+  .points li {
     display: grid;
     gap: 0.375rem;
-    padding: 1.25rem 1.5rem;
+    padding-left: 1.25rem;
+    border-left: 2px solid var(--bronze);
   }
 
   .points p {
     font-size: 0.9375rem;
   }
 
-  .term {
-    padding: 1.5rem;
-    background: #0f1720;
-    color: #e9eef3;
-    font-family: var(--font-mono);
-    font-size: 0.875rem;
-    border-color: #22303e;
-  }
-
-  .cmd span {
-    color: #e0ac4f;
+  .prompt {
+    display: inline-block;
+    width: 2ch;
+    color: var(--accent-on-term);
   }
 
   table {
     width: 100%;
-    margin-top: 1rem;
+    margin-block: 0.75rem 1rem;
     border-collapse: collapse;
   }
 
+  th,
   td {
-    padding: 0.4rem 0;
-    border-top: 1px dashed #22303e;
+    padding: 0.3rem 1ch 0.3rem 0;
+    text-align: left;
+    font-weight: 400;
+    white-space: nowrap;
   }
 
-  .host {
-    color: #93a6b8;
+  thead th {
+    color: var(--term-muted);
+    text-transform: uppercase;
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+  }
+
+  .host th {
+    padding-top: 0.875rem;
+    color: #e0b07a;
+  }
+
+  .host span {
+    margin-left: 1ch;
+    color: var(--term-muted);
+  }
+
+  .agent {
+    padding-left: 2ch;
+  }
+
+  .dim {
+    color: var(--term-muted);
   }
 
   .state {
     text-align: right;
+    padding-right: 0;
   }
 
-  .run::before {
+  .is-running::before {
     content: "● ";
-    color: #6fcf8f;
+    color: var(--accent-on-term);
   }
 
-  .idle::before {
+  .is-idle::before {
     content: "○ ";
-    color: #93a6b8;
+    color: var(--term-muted);
+  }
+
+  td.is-idle {
+    color: var(--term-muted);
+  }
+
+  .cursor {
+    display: inline-block;
+    width: 0.6em;
+    height: 1.2em;
+    vertical-align: text-bottom;
+    background: var(--term-text);
+    animation: blink 1s steps(1) infinite;
+  }
+
+  @keyframes blink {
+    50% {
+      opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cursor {
+      animation: none;
+    }
   }
 
   .note {
     margin-top: 1rem;
-    color: #93a6b8;
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
   }
 
   @media (min-width: 60rem) {
     .layout {
-      grid-template-columns: 1fr 1.1fr;
-      align-items: start;
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+      gap: 4rem;
+      align-items: center;
     }
   }
 </style>

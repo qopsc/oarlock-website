@@ -1,6 +1,8 @@
 ---
 import { Image } from "astro:assets";
 import Command from "./Command.astro";
+import HeroNetwork from "./HeroNetwork.astro";
+import HeroTerminal from "./HeroTerminal.astro";
 import Tabs from "./Tabs.astro";
 import WindowFrame from "./WindowFrame.astro";
 import hero from "../assets/screens/ai-workflow.png";
@@ -8,38 +10,66 @@ import { site } from "../data/site";
 ---
 
 <section class="hero">
-  <div class="container">
-    <p class="kicker"><span class="badge">new</span> Open source · No telemetry · No account</p>
-    <h1>
-      <span>Your terminal.</span>
-      <span class="dim">Your machines.</span>
-      <span class="accent">Your agents.</span>
-    </h1>
-    <p class="lead">{site.description}</p>
+  <div class="stage">
+    <HeroNetwork />
+    <div class="container layout">
+      <h1>
+        <span>Your terminal.</span>
+        <span>Your machines.</span>
+        <span>Your agents.</span>
+      </h1>
 
-    <div class="install">
-      <Tabs label="Install" tabs={[{ id: "unix", label: "macOS & Linux" }, { id: "windows", label: "Windows" }]}>
-        <div data-tab-panel="unix">
-          <Command command={site.install.unix} />
+      <div class="session-slot">
+        <HeroTerminal />
+      </div>
+
+      <div class="intro">
+        <p class="lead">{site.description}</p>
+
+        <div class="install">
+          <Tabs
+            label="Install"
+            tabs={[
+              { id: "unix", label: "macOS & Linux" },
+              { id: "brew", label: "Homebrew" },
+              { id: "nix", label: "Nix" },
+              { id: "windows", label: "Windows" },
+            ]}
+            detect={{ macos: "unix", linux: "unix", windows: "windows" }}
+          >
+            <div data-tab-panel="unix">
+              <Command command={site.install.unix} />
+            </div>
+            <div data-tab-panel="brew">
+              <Command command={site.install.brew} />
+            </div>
+            <div data-tab-panel="nix">
+              <Command command={site.install.nix} />
+            </div>
+            <div data-tab-panel="windows">
+              <p class="windows">
+                <span class="soon">Coming soon.</span> Until then, <a href="/docs/build-from-source/">build from source</a>.
+              </p>
+            </div>
+          </Tabs>
+          <div class="ctas">
+            <a class="button" href="#download">Download</a>
+            <a class="button button--quiet" href={site.repo}>View on GitHub</a>
+            <a class="button button--quiet" href="/docs/">Read the docs</a>
+          </div>
         </div>
-        <div data-tab-panel="windows">
-          <p class="soon"><span class="badge">coming soon</span> Windows builds are on the way. <a href="/docs/build-from-source/">Build from source</a> in the meantime.</p>
-        </div>
-      </Tabs>
-      <div class="ctas">
-        <a class="button" href="#download">Download</a>
-        <a class="button button--quiet" href={site.repo}>Star on GitHub</a>
-        <a class="button button--quiet" href="/docs/">Read the docs</a>
       </div>
     </div>
+  </div>
 
+  <div class="container">
     <div class="shot">
       <WindowFrame bare>
         <Image
           src={hero}
           alt="Oarlock with an AI agent's proposed edit shown as a diff, waiting for approval"
           widths={[640, 960, 1280, 1877]}
-          sizes="(min-width: 76rem) 74rem, 100vw"
+          sizes="(min-width: 80rem) 76rem, 100vw"
           loading="eager"
           fetchpriority="high"
         />
@@ -50,80 +80,98 @@ import { site } from "../data/site";
 
 <style>
   .hero {
+    padding-bottom: clamp(4rem, 3rem + 4vw, 6rem);
+  }
+
+  /* The first screen: fills the window below the header, over the network animation. */
+  .stage {
     position: relative;
-    padding-block: clamp(3.5rem, 2rem + 6vw, 7rem) clamp(3rem, 2rem + 4vw, 5rem);
-    text-align: center;
     isolation: isolate;
+    display: grid;
+    align-content: center;
+    min-height: calc(100svh - var(--header-height));
+    padding-block: clamp(2.5rem, 1.5rem + 3vw, 4rem);
   }
 
-  /* Faint grid with a brass glow behind the headline. */
-  .hero::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    background:
-      radial-gradient(60rem 30rem at 50% 0%, var(--brass-glow), transparent 70%),
-      linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 48px 48px,
-      linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 48px 48px;
-    mask-image: linear-gradient(to bottom, black 55%, transparent);
-  }
-
-  .kicker {
-    display: inline-flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
-    gap: 0.5rem;
-    color: var(--muted);
-    font-family: var(--font-mono);
-    font-size: var(--step--1);
+  /* Phones: headline, intro, then the terminal. Wide: headline beside the terminal. */
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "head" "intro" "term";
+    gap: clamp(2.5rem, 1.5rem + 3vw, 4.5rem);
   }
 
   h1 {
-    margin-top: 1.5rem;
-    font-size: var(--step-4);
+    grid-area: head;
+  }
+
+  .session-slot {
+    grid-area: term;
+  }
+
+  .intro {
+    grid-area: intro;
+    display: grid;
+    gap: 2.5rem;
+  }
+
+  /* Each line pulls a little further right, like successive strokes. */
+  h1 {
+    --stroke: clamp(1.25rem, 0.25rem + 4vw, 4rem);
+    font-size: clamp(2.75rem, 1.5rem + 4.6vw, 4.75rem);
     font-weight: 750;
-    letter-spacing: -0.045em;
+    line-height: 0.98;
+    letter-spacing: -0.04em;
   }
 
   h1 span {
     display: block;
+    animation: stroke 0.7s cubic-bezier(0.2, 0.7, 0.1, 1) both;
   }
 
-  .dim {
-    color: var(--glyph);
-    opacity: 0.75;
+  h1 span:nth-child(2) {
+    margin-left: var(--stroke);
+    animation-delay: 0.08s;
   }
 
-  .accent {
-    color: var(--brass);
+  h1 span:nth-child(3) {
+    margin-left: calc(var(--stroke) * 2);
+    animation-delay: 0.16s;
   }
 
-  .lead {
-    margin: 1.5rem auto 0;
-    max-width: 44rem;
+  @keyframes stroke {
+    from {
+      opacity: 0;
+      transform: translateX(-0.4em);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    h1 span {
+      animation: none;
+    }
   }
 
   .install {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    justify-items: center;
     gap: 1.25rem;
-    max-width: 36rem;
-    margin: 2.5rem auto 0;
-    text-align: left;
+    align-content: start;
   }
 
   .install :global(.tabs) {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: 0.5rem;
-    width: 100%;
   }
 
-  .soon {
-    padding: 0.75rem 1rem;
+  /* Four install options: wrap onto two rows on phones instead of scrolling. */
+  .install :global(.tablist) {
+    flex-wrap: wrap;
+  }
+
+  .windows {
+    padding: 0.875rem 1rem;
     border: 1px dashed var(--line);
     border-radius: var(--radius);
     color: var(--muted);
@@ -133,21 +181,25 @@ import { site } from "../data/site";
   .ctas {
     display: flex;
     flex-wrap: wrap;
-    justify-content: center;
     gap: 0.75rem;
   }
 
-  .shot {
-    position: relative;
-    margin-top: clamp(3rem, 2rem + 4vw, 5rem);
+  @media (min-width: 64rem) {
+    .layout {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+      grid-template-areas: "head term" "intro intro";
+      column-gap: 4rem;
+      row-gap: clamp(3.5rem, 2rem + 3vw, 5rem);
+      align-items: center;
+    }
+
+    .intro {
+      grid-template-columns: minmax(0, 6fr) minmax(0, 6fr);
+      gap: 4rem;
+    }
   }
 
-  .shot::before {
-    content: "";
-    position: absolute;
-    inset: 10% 5% -5%;
-    z-index: -1;
-    background: radial-gradient(closest-side, var(--brass-glow), transparent);
-    filter: blur(40px);
+  .shot {
+    margin-top: clamp(1rem, 0.5rem + 2vw, 2rem);
   }
 </style>

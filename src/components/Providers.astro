@@ -1,17 +1,10 @@
 ---
-import { cloudProviders, localProviders, agents } from "../data/providers";
-
-const groups = [
-  { label: "Bring your own key", items: cloudProviders },
-  { label: "Fully local", items: localProviders },
-  { label: "Orchestrate", items: agents },
-];
+import { providerGroups } from "../data/providers";
 ---
 
-<section class="section" id="models">
-  <div class="container">
+<section class="section band band--tint" id="models">
+  <div class="container split">
     <div class="section-head">
-      <p class="eyebrow">oarlock models</p>
       <h2>Any model. Your key, or your GPU.</h2>
       <p class="lead">
         Paste a key from the provider you already pay for, or point Oarlock at a local server and work offline. Switch per
@@ -20,15 +13,16 @@ const groups = [
     </div>
     <div class="groups">
       {
-        groups.map((g) => (
-          <div class="group">
-            <p class="label">{g.label}</p>
+        providerGroups.map((g) => (
+          <section class="group" aria-label={g.label}>
+            <h3>{g.label}</h3>
             <ul>
               {g.items.map((name) => (
                 <li>{name}</li>
               ))}
             </ul>
-          </div>
+            <p class="note muted">{g.note}</p>
+          </section>
         ))
       }
     </div>
@@ -38,30 +32,48 @@ const groups = [
 <style>
   .groups {
     display: grid;
-    gap: 2rem;
   }
 
-  .label {
-    margin-bottom: 0.75rem;
+  .group {
+    display: grid;
+    gap: 0.625rem;
+    padding-block: 1.75rem;
+    border-top: 1px solid var(--line);
+  }
+
+  .group:first-child {
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  h3 {
     color: var(--muted);
-    font-family: var(--font-mono);
     font-size: var(--step--1);
+    font-weight: 500;
+    letter-spacing: 0;
   }
 
+  /* Names set as running text, wrapping like a sentence. */
   ul {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.625rem;
+    gap: 0.125rem 0;
     padding: 0;
     list-style: none;
+    font-size: var(--step-2);
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: -0.025em;
   }
 
-  li {
-    padding: 0.625rem 1.125rem;
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    background: var(--surface);
-    font-weight: 600;
-    letter-spacing: -0.01em;
+  li:not(:last-child)::after {
+    content: ",";
+    margin-right: 0.4em;
+    color: var(--muted);
+  }
+
+  .note {
+    font-size: 0.9375rem;
+    max-width: var(--measure);
   }
 </style>

@@ -26,8 +26,8 @@ const { title, bare = false } = Astro.props;
   .window {
     overflow: hidden;
     border: 1px solid var(--line);
-    border-radius: 12px;
-    background: #0f1720;
+    border-radius: 14px;
+    background: var(--term-bg);
     box-shadow: var(--shadow);
   }
 
@@ -37,21 +37,21 @@ const { title, bare = false } = Astro.props;
     gap: 0.4rem;
     height: 2.25rem;
     padding-inline: 0.875rem;
-    border-bottom: 1px solid #22303e;
-    background: #15202b;
+    border-bottom: 1px solid var(--term-line);
+    background: #131e1c;
   }
 
   .chrome span {
     width: 0.7rem;
     height: 0.7rem;
     border-radius: 50%;
-    background: #33414f;
+    background: var(--term-line);
   }
 
   .chrome p {
     flex: 1;
     margin-right: 2.5rem;
-    color: #93a6b8;
+    color: var(--term-muted);
     font-family: var(--font-mono);
     font-size: 0.75rem;
     text-align: center;

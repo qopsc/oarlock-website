@@ -30,8 +30,8 @@ const year = new Date().getFullYear();
       </nav>
     </div>
     <p class="legal">
-      © {year} <a href={site.publisher.url}>{site.publisher.name}</a> · Oarlock is licensed under
-      <a href={links.license}>Apache-2.0</a> · Based on <a href={links.terax}>Terax</a> by Crynta
+      © {year} <a href={site.publisher.url}>{site.publisher.name}</a>. Oarlock is licensed under
+      <a href={links.license}>Apache-2.0</a> and based on <a href={links.terax}>Terax</a> by Crynta.
     </p>
   </div>
 </footer>
@@ -40,7 +40,7 @@ const year = new Date().getFullYear();
   .site-footer {
     border-top: 1px solid var(--line);
     padding-block: 3rem 2rem;
-    background: var(--surface);
+    background: var(--bg);
   }
 
   .top {
@@ -62,8 +62,9 @@ const year = new Date().getFullYear();
     align-items: center;
     gap: 0.5rem;
     color: var(--text);
-    font-family: var(--font-mono);
+    font-size: 1.125rem;
     font-weight: 700;
+    letter-spacing: -0.03em;
     text-decoration: none;
   }
 
@@ -82,8 +83,8 @@ const year = new Date().getFullYear();
 
   .heading {
     color: var(--muted);
-    font-family: var(--font-mono);
     font-size: var(--step--1);
+    font-weight: 500;
   }
 
   .cols a {
@@ -92,7 +93,7 @@ const year = new Date().getFullYear();
   }
 
   .cols a:hover {
-    color: var(--brass);
+    color: var(--accent);
     text-decoration: underline;
   }
 

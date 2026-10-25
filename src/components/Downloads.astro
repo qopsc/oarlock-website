@@ -1,151 +1,280 @@
 ---
 import Command from "./Command.astro";
+import Tabs from "./Tabs.astro";
 import { platforms, assetUrl, checksumsUrl } from "../data/downloads";
 import { site, links } from "../data/site";
+
+const mac = platforms.find((p) => p.id === "macos")!;
+const linux = platforms.find((p) => p.id === "linux")!;
+
+/** "oarlock-linux-arm64.rpm" → "arm64", ".rpm" */
+const arch = (file: string) => (file.includes("arm64") ? "arm64" : "x64");
+const format = (file: string) => (file.endsWith(".AppImage") ? "AppImage" : file.slice(file.lastIndexOf(".")));
+const linuxByArch = ["x64", "arm64"].map((a) => ({ arch: a, assets: linux.assets.filter((x) => arch(x.file) === a) }));
 ---
 
 <section class="section" id="download">
   <div class="container">
     <div class="section-head">
-      <p class="eyebrow">oarlock install</p>
       <h2>Install Oarlock.</h2>
-      <p class="lead">
-        One command picks the right build for your machine, verifies its checksum, and puts the <code>oarlock</code> CLI on
-        your PATH. Re-run it to update.
-      </p>
+      <p class="lead">Pick your system. One command does the rest, and re-running it updates.</p>
     </div>
 
-    <div class="methods">
-      <div class="card method primary">
-        <h3>Install script <span class="tag">macOS · Linux</span></h3>
-        <Command command={site.install.unix} />
-        <p class="muted small">
-          Installs a .dmg on macOS and your distro's .deb or .rpm on Linux (AppImage elsewhere).
-          <a href="/install">Read the script</a> · <a href="/docs/install/">Options</a>
-        </p>
+    <Tabs
+      label="Operating system"
+      tabs={[
+        { id: "macos", label: "macOS" },
+        { id: "linux", label: "Linux" },
+        { id: "windows", label: "Windows" },
+      ]}
+      detect={{ macos: "macos", linux: "linux", windows: "windows" }}
+      class="os"
+    >
+      <div class="panel" data-tab-panel="macos">
+        <div class="main">
+          <h3>Install script</h3>
+          <Command command={site.install.unix} />
+          <ol class="steps">
+            <li>Picks the Apple silicon or Intel build.</li>
+            <li>Checks it against the release's SHA256SUMS.</li>
+            <li>Copies Oarlock.app to /Applications and puts <code>oarlock</code> on your PATH.</li>
+          </ol>
+          <p class="fine muted"><a href="/install">Read the script</a> or see <a href="/docs/install/">its options</a>.</p>
+        </div>
+        <div class="side">
+          <h3>Homebrew</h3>
+          <Command command={site.install.brew} />
+          <h3>Download</h3>
+          <ul class="files">
+            {
+              mac.assets.map((a) => (
+                <li>
+                  <a class="button button--quiet" href={assetUrl(a.file)}>{a.label}</a>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
       </div>
-      <div class="card method">
-        <h3>Homebrew <span class="tag">macOS</span></h3>
-        <Command command={site.install.brew} />
-      </div>
-      <div class="card method">
-        <h3>Nix <span class="tag">Linux</span></h3>
-        <Command command={site.install.nix} />
-      </div>
-      <div class="card method wide">
-        <h3>AUR <span class="tag">Arch Linux</span></h3>
-        <p class="muted small"><span class="badge">coming soon</span> Until then, the install script uses the AppImage on Arch.</p>
-      </div>
-    </div>
 
-    <h3 class="direct">Direct downloads</h3>
-    <div class="platforms">
-      {
-        platforms.map((p) => (
-          <div class="card platform">
-            <p class="name">
-              {p.name} {p.status === "soon" && <span class="badge">coming soon</span>}
-            </p>
-            {p.status === "available" ? (
-              <ul>
-                {p.assets.map((a) => (
-                  <li>
-                    <a href={assetUrl(a.file)}>{a.label}</a>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p class="muted small">
-                Windows builds are on the way. For now, <a href="/docs/build-from-source/">build from source</a>.
-              </p>
-            )}
-          </div>
-        ))
-      }
-    </div>
-    <p class="muted small footnote">
-      Every release publishes <a href={checksumsUrl}>SHA256SUMS</a>. All versions are on
+      <div class="panel" data-tab-panel="linux">
+        <div class="main">
+          <h3>Install script</h3>
+          <Command command={site.install.unix} />
+          <ol class="steps">
+            <li>Picks the x64 or arm64 build in your distro's format: .deb for apt, .rpm for dnf and zypper, AppImage elsewhere.</li>
+            <li>Checks it against the release's SHA256SUMS.</li>
+            <li>Installs it with your package manager and puts <code>oarlock</code> on your PATH.</li>
+          </ol>
+          <p class="fine muted"><a href="/install">Read the script</a> or see <a href="/docs/install/">its options</a>.</p>
+        </div>
+        <div class="side">
+          <h3>Nix</h3>
+          <Command command={site.install.nix} />
+          <h3>Download</h3>
+          {
+            linuxByArch.map((group) => (
+              <div class="arch">
+                <p class="muted">{group.arch}</p>
+                <ul class="files">
+                  {group.assets.map((a) => (
+                    <li>
+                      <a class="button button--quiet" href={assetUrl(a.file)}>
+                        {format(a.file)}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))
+          }
+          <p class="fine muted"><span class="soon">AUR coming soon.</span> On Arch, the script uses the AppImage for now.</p>
+        </div>
+      </div>
+
+      <div class="panel" data-tab-panel="windows">
+        <div class="main">
+          <h3><span class="soon">Coming soon</span></h3>
+          <p class="muted">
+            Windows builds are on the way. Until then, <a href="/docs/build-from-source/">build from source</a>, or
+            <a href={links.releases}>watch the releases</a> to hear when it lands.
+          </p>
+        </div>
+      </div>
+    </Tabs>
+
+    <p class="fine muted footnote">
+      Every release publishes <a href={checksumsUrl}>SHA256SUMS</a>. Older versions are on
       <a href={links.releases}>GitHub Releases</a>.
     </p>
   </div>
 </section>
 
 <style>
-  .methods {
+  .section :global(.os) {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 26rem), 1fr));
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.25rem;
+  }
+
+  .section :global(.os .tablist) {
+    justify-self: start;
+    padding: 0.25rem;
+    border: 1px solid var(--line);
+    border-radius: calc(var(--radius) + 0.25rem);
+    background: var(--bg);
+  }
+
+  .section :global(.os [role="tab"]) {
+    padding: 0.5rem 1.25rem;
+    font-size: var(--step-0);
+  }
+
+  .section :global(.os [role="tab"][aria-selected="true"]) {
+    border-color: var(--line);
+    background: var(--surface);
+  }
+
+  .panel {
+    display: grid;
+    gap: 1px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--line);
+  }
+
+  /* Without JS every panel shows, stacked. */
+  .panel + .panel {
+    margin-top: 1.5rem;
+  }
+
+  .panel[role="tabpanel"] {
+    margin-top: 0;
+  }
+
+  .main,
+  .side {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: 1rem;
-  }
-
-  .method {
-    display: grid;
-    gap: 0.875rem;
     align-content: start;
-    padding: 1.5rem;
+    padding: clamp(1.5rem, 1rem + 2vw, 2.5rem);
+    background: var(--surface);
   }
 
-  .primary,
-  .wide {
-    grid-column: 1 / -1;
+  .side {
+    background: var(--surface-2);
   }
 
-  .primary {
-    border-color: color-mix(in srgb, var(--brass-fill) 55%, var(--line));
+  /* Commands sit inset, darker than both halves of the panel. */
+  .panel :global(.command) {
+    background: var(--bg);
   }
 
   h3 {
+    font-size: var(--step-1);
+  }
+
+  .side h3 {
+    font-size: var(--step-0);
+  }
+
+  .side h3:not(:first-child) {
+    margin-top: 0.75rem;
+  }
+
+  .main :global(.command) {
+    padding-block: 0.75rem;
+    border-color: var(--accent);
+  }
+
+  .steps {
+    display: grid;
+    gap: 0.625rem;
+    margin-top: 0.5rem;
+    padding: 0;
+    list-style: none;
+    counter-reset: step;
+  }
+
+  .steps li {
+    position: relative;
+    padding-left: 2.25rem;
+    color: var(--muted);
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    counter-increment: step;
+  }
+
+  .steps li::before {
+    content: counter(step);
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: grid;
+    place-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border: 1px solid var(--accent);
+    border-radius: 50%;
+    color: var(--accent);
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .files {
     display: flex;
     flex-wrap: wrap;
-    align-items: baseline;
     gap: 0.5rem;
-    font-size: 1.0625rem;
-  }
-
-  .tag {
-    color: var(--muted);
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    font-weight: 400;
-    letter-spacing: 0;
-  }
-
-  .small {
-    font-size: 0.875rem;
-  }
-
-  .direct {
-    margin-top: 3rem;
-    margin-bottom: 1rem;
-  }
-
-  .platforms {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
-    gap: 1rem;
-  }
-
-  .platform {
-    padding: 1.25rem 1.5rem;
-  }
-
-  .name {
-    margin-bottom: 0.75rem;
-    font-weight: 700;
-  }
-
-  .platform ul {
-    display: grid;
-    gap: 0.375rem;
     padding: 0;
     list-style: none;
   }
 
-  .platform a {
-    font-family: var(--font-mono);
+  .files .button:hover {
+    background: var(--bg);
+  }
+
+  .files .button {
+    background: var(--surface);
+    min-height: 2.5rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.9375rem;
+  }
+
+  .arch {
+    display: grid;
+    grid-template-columns: 3.5rem minmax(0, 1fr);
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .arch p {
+    font-size: 0.875rem;
+  }
+
+  @media (max-width: 30rem) {
+    .arch {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0.375rem;
+    }
+  }
+
+  .fine {
     font-size: 0.875rem;
   }
 
   .footnote {
     margin-top: 1.25rem;
+  }
+
+  @media (min-width: 60rem) {
+    .panel {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    }
+
+    .panel:has(> :only-child) {
+      grid-template-columns: minmax(0, 1fr);
+    }
   }
 </style>
