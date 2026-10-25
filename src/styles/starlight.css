@@ -3,22 +3,22 @@
   --sl-font: var(--font-bricolage), system-ui, sans-serif;
   --sl-font-mono: var(--font-martian-mono), ui-monospace, monospace;
 
-  --sl-color-accent-low: #10352c;
-  --sl-color-accent: #4fd1b0;
+  --sl-color-accent-low: #0f3a31;
+  --sl-color-accent: #51d0ae;
   --sl-color-accent-high: #b9f0e1;
   --sl-color-white: #ffffff;
   --sl-color-gray-1: #e6efeb;
   --sl-color-gray-2: #c4d4ce;
   --sl-color-gray-3: #8ea59d;
   --sl-color-gray-4: #587069;
-  --sl-color-gray-5: #24352f;
-  --sl-color-gray-6: #15211f;
-  --sl-color-black: #0d1615;
+  --sl-color-gray-5: #213330;
+  --sl-color-gray-6: #111d1d;
+  --sl-color-black: #0a1415;
 }
 
 :root[data-theme="light"] {
   --sl-color-accent-low: #cde9e0;
-  --sl-color-accent: #0f7a63;
+  --sl-color-accent: #0f735f;
   --sl-color-accent-high: #08463a;
   --sl-color-white: #10201c;
   --sl-color-gray-1: #182b26;

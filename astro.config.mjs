@@ -10,8 +10,13 @@ export default defineConfig({
     starlight({
       title: "Oarlock Docs",
       description: "Install, configure, and use Oarlock, the terminal-first AI workspace.",
-      logo: { src: "./src/assets/logo.svg", alt: "Oarlock" },
+      logo: { dark: "./src/assets/mark-on-dark.svg", light: "./src/assets/mark-on-light.svg", alt: "Oarlock" },
       favicon: "/favicon.svg",
+      head: [
+        { tag: "link", attrs: { rel: "icon", href: "/favicon.ico", sizes: "48x48" } },
+        { tag: "link", attrs: { rel: "apple-touch-icon", href: "/apple-touch-icon.png" } },
+        { tag: "link", attrs: { rel: "manifest", href: "/site.webmanifest" } },
+      ],
       social: [{ icon: "github", label: "GitHub", href: "https://github.com/qopsc/oarlock" }],
       editLink: { baseUrl: "https://github.com/qopsc/oarlock-website/edit/main/" },
       customCss: ["./src/styles/starlight.css"],

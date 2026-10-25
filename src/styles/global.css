@@ -1,30 +1,30 @@
-/* Oarlock: weathered bronze. Verdigris marks what you can use today;
+/* Oarlock brand colors (brand-assets/colors.css): weathered bronze. Verdigris marks what you can use today;
    bronze marks what's still coming. Dark is the default; light follows the
    system or the header toggle. Theme choice is stored under Starlight's key
    so /docs stays in sync. */
 :root {
   color-scheme: dark;
 
-  --bg: #0d1615; /* deep hull */
-  --surface: #15211f; /* raised bands */
-  --surface-2: #1b2a27; /* hover, selected tab */
-  --line: #24352f;
+  --bg: #0a1415; /* deep hull */
+  --surface: #111d1d; /* raised bands */
+  --surface-2: #172625; /* hover, selected tab */
+  --line: #213330;
   --text: #e6efeb; /* foam */
   --muted: #8ea59d; /* salt */
-  --accent: #4fd1b0; /* verdigris: links, focus, available */
-  --accent-fill: #4fd1b0;
-  --accent-fill-hover: #79e0c6;
+  --accent: #51d0ae; /* verdigris: links, focus, available */
+  --accent-fill: #51d0ae;
+  --accent-fill-hover: #7cdcc2;
   --accent-ink: #052019;
-  --bronze: #c98a4b; /* coming soon */
+  --bronze: #c7894a; /* coming soon */
   --shadow: 0 40px 90px -40px rgb(0 0 0 / 0.75);
 
   /* The terminal mock and screenshot frames stay dark in both themes. */
-  --term-bg: #0a1211;
-  --term-line: #22322e;
+  --term-bg: #070f10;
+  --term-line: #1f2f2d;
   --term-text: #e6efeb;
   --term-muted: #8ea59d;
-  --term-chrome: #131e1c;
-  --accent-on-term: #4fd1b0;
+  --term-chrome: #101b1c;
+  --accent-on-term: #51d0ae;
 
   --font-sans: var(--font-bricolage), system-ui, sans-serif;
   --font-mono: var(--font-martian-mono), ui-monospace, monospace;
@@ -36,7 +36,7 @@
   --step-3: clamp(2.25rem, 1.6rem + 2.4vw, 3.25rem);
   --step-4: clamp(2.75rem, 1.5rem + 5.2vw, 5.25rem);
 
-  --header-height: 4.0625rem; /* .site-header: 4rem bar plus its border */
+  --header-height: 4.5625rem; /* .site-header: 4.5rem bar plus its border */
   --gutter: clamp(1rem, 4vw, 2.5rem);
   --measure: 62ch;
   --page: 76rem;
@@ -52,9 +52,9 @@
   --line: #cfdcd6;
   --text: #10201c;
   --muted: #4a5f58;
-  --accent: #0f7a63;
-  --accent-fill: #0f7a63;
-  --accent-fill-hover: #0b604e;
+  --accent: #0f735f;
+  --accent-fill: #0f735f;
+  --accent-fill-hover: #0b5c4c;
   --accent-ink: #ffffff;
   --bronze: #8f5a24;
   --shadow: 0 40px 80px -45px rgb(16 32 28 / 0.5);
@@ -70,7 +70,7 @@ html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
   scroll-behavior: smooth;
-  scroll-padding-top: 5rem;
+  scroll-padding-top: 5.5rem;
 }
 
 @media (prefers-reduced-motion: reduce) {

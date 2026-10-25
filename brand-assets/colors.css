@@ -1,0 +1,8 @@
+:root {
+  --oarlock-verdigris: #51D0AE;      /* primary accent on dark: buttons, links */
+  --oarlock-deep-verdigris: #0F735F; /* primary on light; white text on it */
+  --oarlock-bronze: #C7894A;         /* secondary accent: highlights, badges */
+  --oarlock-deep-hull: #0A1415;      /* dark background */
+  --oarlock-ink: #10201C;             /* text on light */
+  --oarlock-foam: #E6EFEB;            /* text on dark */
+}

@@ -9,8 +9,7 @@ const path = Astro.url.pathname;
 <header class="site-header">
   <div class="container bar">
     <a class="brand" href="/" aria-label="Oarlock home">
-      <Logo size={30} />
-      <span>oarlock</span>
+      <Logo height={40} />
     </a>
     <nav aria-label="Main">
       <ul>
@@ -55,18 +54,13 @@ const path = Astro.url.pathname;
     flex-wrap: wrap;
     align-items: center;
     gap: 0.5rem 1.5rem;
-    min-height: 4rem;
+    min-height: 4.5rem;
     padding-block: 0.5rem;
   }
 
   .brand {
     display: inline-flex;
     align-items: center;
-    gap: 0.625rem;
-    color: var(--text);
-    font-size: 1.25rem;
-    font-weight: 700;
-    letter-spacing: -0.035em;
     text-decoration: none;
   }
 

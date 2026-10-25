@@ -1,11 +1,8 @@
 ---
-import { Image } from "astro:assets";
 import Command from "./Command.astro";
 import HeroNetwork from "./HeroNetwork.astro";
 import HeroTerminal from "./HeroTerminal.astro";
 import Tabs from "./Tabs.astro";
-import WindowFrame from "./WindowFrame.astro";
-import hero from "../assets/screens/ai-workflow.png";
 import { site } from "../data/site";
 ---
 
@@ -61,28 +58,9 @@ import { site } from "../data/site";
       </div>
     </div>
   </div>
-
-  <div class="container">
-    <div class="shot">
-      <WindowFrame bare>
-        <Image
-          src={hero}
-          alt="Oarlock with an AI agent's proposed edit shown as a diff, waiting for approval"
-          widths={[640, 960, 1280, 1877]}
-          sizes="(min-width: 80rem) 76rem, 100vw"
-          loading="eager"
-          fetchpriority="high"
-        />
-      </WindowFrame>
-    </div>
-  </div>
 </section>
 
 <style>
-  .hero {
-    padding-bottom: clamp(4rem, 3rem + 4vw, 6rem);
-  }
-
   /* The first screen: fills the window below the header, over the network animation. */
   .stage {
     position: relative;
@@ -197,9 +175,5 @@ import { site } from "../data/site";
       grid-template-columns: minmax(0, 6fr) minmax(0, 6fr);
       gap: 4rem;
     }
-  }
-
-  .shot {
-    margin-top: clamp(1rem, 0.5rem + 2vw, 2rem);
   }
 </style>

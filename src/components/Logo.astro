@@ -1,12 +1,40 @@
 ---
-import logo from "../assets/logo.svg?raw";
+/**
+ * The Oarlock lockup (mark plus wordmark) from brand-assets/, recoloured with
+ * the theme: the mark in the accent, the wordmark in the text colour.
+ */
+import lockup from "../../brand-assets/lockup/oarlock-lockup-on-dark.svg?raw";
 
 interface Props {
-  size?: number;
+  /** Rendered height in pixels; the width follows the lockup's proportions. */
+  height?: number;
 }
 
-const { size = 28 } = Astro.props;
-const svg = logo.replace(/<title>.*?<\/title>/, "").replace(/width="\d+" height="\d+"/, `width="${size}" height="${size}" aria-hidden="true"`);
+const { height = 28 } = Astro.props;
+// The source file has 24 units of padding on every side; crop it so `height` is the logo's real height.
+const svg = lockup
+  .replace(/viewBox="0 0 ([\d.]+) ([\d.]+)"/, (_, w, h) => `viewBox="24 24 ${Number(w) - 48} ${Number(h) - 48}"`)
+  .replace(/<svg /, `<svg height="${height}" aria-hidden="true" focusable="false" `)
+  .replace('fill="#51D0AE"', 'class="mark"')
+  .replace('fill="#E6EFEB"', 'class="word"');
 ---
 
-<Fragment set:html={svg} />
+<span class="logo"><Fragment set:html={svg} /></span>
+
+<style>
+  .logo {
+    display: inline-flex;
+  }
+
+  .logo :global(svg) {
+    width: auto;
+  }
+
+  .logo :global(.mark) {
+    fill: var(--accent);
+  }
+
+  .logo :global(.word) {
+    fill: var(--text);
+  }
+</style>

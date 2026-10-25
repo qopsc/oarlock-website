@@ -2,16 +2,28 @@
 import { Image } from "astro:assets";
 import Tabs from "./Tabs.astro";
 import WindowFrame from "./WindowFrame.astro";
-import { features } from "../data/features";
+import { features, pillars } from "../data/features";
 ---
 
 <section class="section" id="features">
   <div class="container">
-    <div class="section-head">
-      <h2>Everything around the prompt, nothing in the way.</h2>
-      <p class="lead">
-        A terminal, an agent, an editor, git, and a browser tab, in one lightweight native app built on Tauri and Rust.
-      </p>
+    <div class="intro">
+      <div class="section-head">
+        <h2>Everything around the prompt, nothing in the way.</h2>
+        <p class="lead">
+          A terminal, an agent, an editor, git, and a browser tab, in one lightweight native app built on Tauri and Rust.
+        </p>
+      </div>
+      <dl class="principles">
+        {
+          pillars.map((p) => (
+            <div>
+              <dt>{p.title}</dt>
+              <dd class="muted">{p.text}</dd>
+            </div>
+          ))
+        }
+      </dl>
     </div>
 
     <Tabs
@@ -43,6 +55,57 @@ import { features } from "../data/features";
 </section>
 
 <style>
+  .intro {
+    display: grid;
+    gap: 2.5rem;
+    margin-bottom: clamp(3rem, 2rem + 3vw, 5rem);
+  }
+
+  .intro .section-head {
+    margin-bottom: 0;
+  }
+
+  /* What Oarlock stands for, as a compact two-column list. */
+  .principles {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+    gap: 1.5rem 2rem;
+  }
+
+  .principles div {
+    display: grid;
+    gap: 0.25rem;
+    align-content: start;
+    padding-top: 0.875rem;
+    border-top: 1px solid var(--line);
+  }
+
+  .principles dt {
+    font-weight: 600;
+  }
+
+  .principles dd {
+    font-size: 0.9375rem;
+    line-height: 1.5;
+  }
+
+  @media (min-width: 64rem) {
+    .intro {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+      gap: 4rem;
+      align-items: start;
+    }
+
+    .principles {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    /* An odd one out takes the full row instead of sitting alone. */
+    .principles div:last-child:nth-child(odd) {
+      grid-column: 1 / -1;
+    }
+  }
+
   .section :global(.showcase) {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
