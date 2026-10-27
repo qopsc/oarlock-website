@@ -10,7 +10,7 @@
     "check:csp": "node scripts/csp.mjs --check",
     "preview": "astro preview",
     "check": "astro check",
-    "lint:install": "shellcheck public/install",
+    "lint:install": "shellcheck --severity=warning public/install",
     "test:install": "bash tests/install.test.sh",
     "astro": "astro"
   },

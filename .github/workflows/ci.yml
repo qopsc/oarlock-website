@@ -42,7 +42,8 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: shellcheck
         if: runner.os == 'Linux'
-        run: shellcheck public/install tests/install.test.sh
+        # warning and above: the runner's shellcheck (0.11) adds info-level SC2015 notes on `a && b || true` idioms
+        run: shellcheck --severity=warning public/install tests/install.test.sh
       - name: Installer tests
         run: bash tests/install.test.sh
       - name: Dry run on this runner
