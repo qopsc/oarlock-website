@@ -38,6 +38,8 @@ Astro writes a hashed CSP `<meta>` into every page (`security.csp` in `astro.con
 
 The build output is plain files; serve `dist/` from any static host. [`deploy/HEADERS.md`](deploy/HEADERS.md) lists the response headers and per-path rules the server needs (notably `text/plain` for `/install`), with Caddy and nginx examples.
 
+Production is a container: `deploy/Dockerfile` builds the site and serves it with nginx on port 8080 (TLS and the `www` redirect live at the cluster gateway). `tests/image.sh` smoke-tests the image. On every push to `main`, CI builds the candidate, tests that exact image, and publishes it to `ghcr.io/qopsc/oarlock-website` by digest with a `release` record. A registry push does not deploy anything: the private `qopsc/stacks` repository verifies the record, pins the digest, and promotes it. Renovate (`renovate.json`) proposes dependency updates as pull requests.
+
 [`deploy/RELEASE-INTEGRATION.md`](deploy/RELEASE-INTEGRATION.md) describes the changes the Oarlock release workflow needs (stable asset names, `SHA256SUMS`, Homebrew tap bump) for the installer and download links to work.
 
 ## License

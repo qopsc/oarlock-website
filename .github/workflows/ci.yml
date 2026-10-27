@@ -1,25 +1,31 @@
+# One workflow, one tested image per commit: the site build and installer tests gate the image job, which builds
+# the candidate, runs tests/image.sh against that exact image, and publishes it only from a trusted push to main.
+# A pull request or a dispatch on another branch builds and tests but never publishes.
 name: CI
 
 on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
   site:
-    runs-on: ubuntu-latest
+    runs-on: namespace-profile-qops-u24-8c-16gb
     steps:
-      - uses: actions/checkout@v5
-      - uses: oven-sh/setup-bun@v2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: 1.4.4
       - run: bun install --frozen-lockfile
       - name: Build (astro check, build, CSP finalize)
         run: bun run build
       - name: Verify every inline script and style is covered by the CSP
         run: bun run check:csp
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: dist
           path: dist
@@ -29,10 +35,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        # Linux on the Namespace profile; macOS stays on GitHub's runner (no Namespace macOS profile yet).
+        os: [namespace-profile-qops-u24-8c-16gb, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: shellcheck
         if: runner.os == 'Linux'
         run: shellcheck public/install tests/install.test.sh
@@ -40,3 +47,43 @@ jobs:
         run: bash tests/install.test.sh
       - name: Dry run on this runner
         run: bash public/install --dry-run
+
+  image:
+    needs: [site, installer]
+    runs-on: namespace-profile-qops-u24-8c-16gb
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Build and test candidate
+        run: |
+          docker build --label org.opencontainers.image.revision="$GITHUB_SHA" \
+            --label org.opencontainers.image.source="https://github.com/$GITHUB_REPOSITORY" \
+            -f deploy/Dockerfile -t oarlock-website:candidate . 2>&1 | tee build.log
+          grep -i -E 'roadmap|snapshot' build.log || echo "build log: no roadmap source line (see astro output above)"
+          tests/image.sh oarlock-website:candidate
+      - name: Publish tested image
+        if: github.repository == 'qopsc/oarlock-website' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          printf '%s' "$GH_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+          ref="ghcr.io/qopsc/oarlock-website:sha-$GITHUB_SHA"
+          docker tag oarlock-website:candidate "$ref"
+          docker push "$ref"
+          # RepoDigests may print a short name; the record needs the full pullable reference.
+          digest=$(docker image inspect "$ref" --format '{{index .RepoDigests 0}}' | sed 's/.*@//')
+          image="ghcr.io/qopsc/oarlock-website@$digest"
+          jq -n --arg source "$GITHUB_SHA" --arg image "$image" \
+            --arg run "$GITHUB_RUN_ID" --arg attempt "$GITHUB_RUN_ATTEMPT" \
+            '{repository:"qopsc/oarlock-website",source:$source,image:$image,run_id:$run,attempt:$attempt}' \
+            > release.json
+          cat release.json
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: github.repository == 'qopsc/oarlock-website' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        with:
+          name: release
+          path: release.json
+          retention-days: 400
