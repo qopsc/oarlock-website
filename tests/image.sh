@@ -45,4 +45,6 @@ expect "/install body" "$(curl -s "$base/install" | shasum)" "$(shasum < public/
 headers_on /install
 expect "/missing status" "$(status /missing)" 404
 expect "/missing body" "$(curl -s "$base/missing" | shasum)" "$(curl -s "$base/404.html" | shasum)"
+# Cluster pods are dual-stack; the stacks Service reaches them over IPv6 too.
+expect "IPv6 listener" "$(docker exec "$name" wget -q -O /dev/null 'http://[::1]:8080/' >/dev/null 2>&1 && echo up || echo down)" up
 exit "$fails"
