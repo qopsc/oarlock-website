@@ -1,28 +1,32 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "description": "qopsc/oarlock-website: update PRs only; a merge builds a tested candidate image, production changes only when qopsc/stacks promotes its digest.",
+  "description": "qopsc/oarlock-website: patch, minor and digest updates automerge after CI; majors wait for approval on the dependency dashboard. A merge only builds a tested candidate image; production changes only when qopsc/stacks promotes its digest.",
   "extends": ["config:recommended", "helpers:pinGitHubActionDigests", "docker:pinDigests"],
   "timezone": "UTC",
-  "schedule": ["before 6am on monday"],
-  "prConcurrentLimit": 5,
-  "prHourlyLimit": 0,
-  "automerge": false,
-  "platformAutomerge": false,
-  "pinDigests": true,
-  "minimumReleaseAge": "14 days",
+  "schedule": ["every weekend"],
+  "minimumReleaseAge": "3 days",
   "internalChecksFilter": "strict",
+  "prHourlyLimit": 0,
+  "prConcurrentLimit": 10,
   "dependencyDashboard": true,
   "labels": ["deps"],
   "osvVulnerabilityAlerts": true,
-  "vulnerabilityAlerts": { "minimumReleaseAge": "3 days", "addLabels": ["security"] },
+  "vulnerabilityAlerts": { "schedule": ["at any time"], "addLabels": ["security"] },
+  "platformAutomerge": false,
+  "pinDigests": true,
   "enabledManagers": ["bun", "dockerfile", "github-actions"],
   "ignorePaths": ["docs/**", "dist/**"],
   "packageRules": [
     {
-      "description": "Majors wait for approval on the dashboard",
+      "description": "Majors wait for approval on the dependency dashboard",
       "matchUpdateTypes": ["major"],
       "dependencyDashboardApproval": true,
       "addLabels": ["needs-plan"]
+    },
+    {
+      "description": "Patch, minor and digest updates merge themselves once CI is green",
+      "matchUpdateTypes": ["minor", "patch", "digest", "pin", "pinDigest"],
+      "automerge": true
     },
     {
       "description": "Astro, Starlight and the @astrojs/* integrations move together",
