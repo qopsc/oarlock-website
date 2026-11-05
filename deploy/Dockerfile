@@ -5,7 +5,7 @@
 # Astro's CLI runs on Node; bun only installs dependencies and runs scripts.
 # `bun run build` = astro check, astro build, scripts/csp.mjs (final CSP hashes). The roadmap page fetches
 # ROADMAP.md from qopsc/oarlock@main and falls back to the committed snapshot; the build log says which.
-FROM node:24.21.0-alpine@sha256:ebfe2f90462722a7a4de65e91990e97fe0d401c70e0e762c5b53302f905ec1c1 AS build
+FROM node:24.22.2-alpine@sha256:8a32c8cf649a49915a66e81e7a609223c708d0adabf288ee3f4077d765542f85 AS build
 COPY --from=oven/bun:1.4.4-alpine@sha256:4cf82f5686b196504fe119db3fcd9185b191f82ece82c40680e597228ec6070a /usr/local/bin/bun /usr/local/bin/bun
 WORKDIR /app
 COPY package.json bun.lock ./
